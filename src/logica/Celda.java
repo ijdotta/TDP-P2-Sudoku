@@ -2,23 +2,69 @@ package logica;
 
 public class Celda {
 	
-	private int valor;
-	private boolean activa;
-	private EntidadGrafica entidadGrafica;
-
-	public Celda() {
-		// TODO Auto-generated constructor stub
+	protected int valor; 
+	protected boolean editable;
+	protected int fila;
+	protected int columna;
+	protected EntidadGrafica entidadGrafica;
+	
+	/**
+	 * 
+	 * @param valor
+	 */
+	public Celda(int valor, int f, int j) {
+		this.valor = valor;
+		editable = false;
+		fila = f;
+		columna = j;
+		entidadGrafica = new EntidadGrafica();
+		actualizarImagen(true);
 	}
 	
 	/**
-	 * Actualiza el valor de la celda y su gráfico.
-	 * @param v Valor de la celda.
+	 * 
+	 * @param valor
 	 */
-	public void setValor(int v) {
-		if (activa) {
-			valor = v;
-			entidadGrafica.actualizar(v-1);
-		}
+	public void actualizarValor(int valor) {
+		this.valor = valor;
+		entidadGrafica.actualizar(valor, true);
+	}
+	
+	/**
+	 * 
+	 * @param correcto
+	 */
+	public void actualizarImagen(boolean correcto) {
+		entidadGrafica.actualizar(valor, correcto);
+	}
+	
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getValor() {
+		return valor;
+	}
+	
+	public boolean isEditable() {
+		return editable;
+	}
+	
+	public int getFila() {
+		return fila;
+		
+	}
+	
+	public int getColumna() {
+		return columna;
+	}
+	
+	public EntidadGrafica getEntidadGrafica() {
+		return entidadGrafica;
 	}
 	
 }
