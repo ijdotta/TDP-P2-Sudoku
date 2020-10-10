@@ -4,9 +4,13 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * 
@@ -18,7 +22,13 @@ public class Juego {
 	protected int celdasRestantes;
 	protected Celda [][] tablero;
 	
-	public Juego(String path) {
+	/**
+	 * Crea e inicializa un Sudoku con valores desde 1 hasta size. Requiere size un cuadrado perfecto.
+	 * @param path Ruta al archivo de texto.
+	 * @param size Cantidad de números.
+	 * @
+	 */
+	public Juego(String path, int size) {
 		BufferedReader br;
 		String line;
 		String [] row;
@@ -51,108 +61,34 @@ public class Juego {
 			e.printStackTrace();
 		}
 		
-		controlarSolucion();
+		if (controlGeneral()) {
+			System.out.println("BIENNNNNNNNNN");
+		}
+		else {
+			System.out.println("MALLLLLLLLLLL");
+		}
 		
 		//For debugging
 		printTablero();
 		
-		eliminarCeldas(10);
+		eliminarCeldas(5);
 		
 		printTablero();
+//		tablero = null;
 	}
 	
-	/**
-	 * Controla la solución cargada en el tablero.
-	 * Únicamente debe utilizarse al momento de la inicialización.
-	 */
-	private void controlarSolucion() {
-		boolean esCorrecto = true;
+	private boolean isPerfectSquare(int n) {
+		int i = 0;
+		boolean perfectSquare = false;
 		
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
-				esCorrecto = checkPanel(i*3, j*3);
-		
-		esCorrecto = esCorrecto && checkFilasCols();
-		
-		if (!esCorrecto)
-			System.out.println("ERRORES EN LA SOLUCION CARGADA");
-		else
-			System.out.println("SOLUCION BIEN!");
-	}
-
-	/**
-	 * Controla que no haya valores repetidos en filas y columnas.
-	 * @return true si no hay valores repetidos.
-	 */
-	private boolean checkFilasCols() {
-		HashSet<Integer> valores_fil, valores_col;
-		int val_fil, val_col;
-		boolean hayError = false;
-		
-		for (int k = 0; k < 9 && !hayError; k++) {
-			valores_fil = new HashSet<Integer>();
-			valores_col = new HashSet<Integer>();
-			
-			for (int i = 0; i < 9 && !hayError; i++) {
-				val_fil = tablero[k][i].getValor();
-				val_col = tablero[i][k].getValor();
-				
-				hayError = valores_fil.contains(val_fil) || valores_col.contains(val_col);
-				valores_fil.add(val_fil);
-				valores_col.add(val_col);
-			}
+		while (i <= (n/2) && !perfectSquare) {
+			perfectSquare = i*i == n;
+			i++;
 		}
 		
-		return !hayError;
+		return perfectSquare;
 	}
 	
-	private boolean checkFilasCols(int f, int c) {
-		HashSet<Integer> valores_fil, valores_col;
-		int val_fil, val_col;
-		boolean hayError = false;
-		
-		valores_fil = new HashSet<Integer>();
-		valores_col = new HashSet<Integer>();
-		
-		for (int k = 0; k < 9 && !hayError; k++) {
-			
-			
-				val_fil = tablero[f][k].getValor();
-				val_col = tablero[k][c].getValor();
-				
-				hayError = valores_fil.contains(val_fil) || valores_col.contains(val_col);
-				valores_fil.add(val_fil);
-				valores_col.add(val_col);
-				
-		}
-		
-		return !hayError;
-	}
-
-	/**
-	 * Controla que no haya valores repetidos en el panel cuya celda superior izquierda está
-	 * dada por los índices f y c.
-	 * @param f Fila inicial del panel
-	 * @param c Columna inicial del panel
-	 * @return true si el panel no contiene valores repetidos.
-	 */
-	private boolean checkPanel(int f, int c) {
-		HashSet<Integer> valores = new HashSet<Integer>();
-		int v_aux;
-		boolean hayError = false;
-		
-		for (int i = f; i < f+3 && !hayError; i++) {
-			for (int j = c; j < c+3 && !hayError; j++) {
-				v_aux = tablero[i][j].getValor();
-				
-				hayError = valores.contains(v_aux);
-				valores.add(v_aux);
-			}
-		}
-		
-		return !hayError;
-	}
-
 	/**
 	 * Eliminar celdas al azar.
 	 * @param cant Cantidad de celdas distintas a eliminar.
@@ -169,11 +105,190 @@ public class Juego {
 		while (j < cant) {
 			int f = r.nextInt(9), c = r.nextInt(9);
 			if (tablero[f][c].getValor() != -1) {
-				tablero[f][c].actualizarValor(-1);
+				tablero[f][c].setValor(-1);
 				tablero[f][c].setEditable(true);
 				j++;
 			}
 		}
+	}
+	
+	private boolean controlGeneralOLD() {
+		boolean correcto = true;
+		
+		for (int i = 0; i < 9; i++) {
+			controlFila(i);
+			controlColumna(i);
+			controlPanel(i);
+		}
+		
+		return correcto;
+	}
+	
+	public void restore() {
+		for (int i = 0; i < tablero.length; i++)
+			for (int j = 0; j < tablero[i].length; j++)
+				tablero[i][j].setCorrecta(true);
+	}
+	
+	private boolean controlGeneral() {
+		boolean correcto = true;
+		
+		restore();
+		
+		for (int i = 0; i < tablero.length; i++) {
+			for (int j = 0; j < tablero[0].length; j++) {
+				controlar(i, j);
+			}
+		}
+		
+		return correcto;
+	}
+
+	private void controlar(int i, int j) {
+		Celda celda_control = tablero[i][j];
+		Celda actual;
+		int valor = celda_control.getValor();
+		boolean hayError;
+		
+		for (int k = 0; k < 9; k++) {
+			actual = tablero[i][k];
+			if (valor != -1 && actual != celda_control && actual.getValor() == valor) {
+				celda_control.setCorrecta(false);
+			}
+			
+			actual = tablero[k][j];
+			if (valor != -1 && actual != celda_control && actual.getValor() == valor) {
+				celda_control.setCorrecta(false);
+			}
+			
+		}
+		
+		int f_panel = ((int)i/3) * 3;
+		int c_panel = ((int)j/3) * 3;
+		
+		for (int f = f_panel; f < f_panel+3; f++) {
+			for (int c = c_panel; c < c_panel+3; c++) {
+				actual = tablero[f][c];
+				if (valor != -1 && actual != celda_control && actual.getValor() == valor) {
+					celda_control.setCorrecta(false);
+				}
+			}
+		}
+		
+	}
+
+	private boolean controlFila(int i) {
+		Map<Integer, List<Celda>> values = new HashMap<Integer, List<Celda>>();
+		List<Celda> cellList;
+		Celda current;
+		int value;
+		
+		for (int j = 0; j < 9; j++) {
+			current = tablero[i][j];
+			value = current.getValor();
+			
+			cellList = values.get(value);
+			
+			if (cellList == null) {
+				cellList = new ArrayList<Celda>();
+				values.put(value, cellList);
+			}
+			
+//			System.out.println("Celda ("+i+", "+j+") = " + value);
+			
+			cellList.add(current);
+		}
+		
+		return corregirCeldas(values);
+	}
+	
+
+	private boolean controlColumna(int i) {
+		Map<Integer, List<Celda>> values = new HashMap<Integer, List<Celda>>();
+		List<Celda> cellList;
+		Celda current;
+		int value;
+		
+		for (int j = 0; j < 9; j++) {
+			current = tablero[j][i];
+			value = current.getValor();
+			
+			cellList = values.get(value);
+			if (cellList == null) {
+				cellList = new ArrayList<Celda>();
+				values.put(value, cellList);
+			}
+			
+			cellList.add(current);
+		}
+		
+		return corregirCeldas(values);
+	}
+
+	private boolean controlPanel(int i) {
+		Map<Integer, List<Celda>> values = new HashMap<Integer, List<Celda>>();
+		List<Celda> cellList;
+		Celda current;
+		int value;
+		int fila_ini = ((int) i/3) * 3, col_ini = i%3 * 3;
+		int long_panel = 3;
+		
+		for (int f = fila_ini; f < fila_ini+long_panel; f++) {
+			for (int c = col_ini; c < col_ini+long_panel; c++) {
+				current = tablero[f][c];
+				value = current.getValor();
+				
+				cellList = values.get(value);
+				if (cellList == null) {
+					cellList = new ArrayList<Celda>();
+					values.put(value, cellList);
+				}
+				
+				cellList.add(current);
+			}
+		}
+		
+		return corregirCeldas(values);
+	}
+	
+	private boolean corregirCeldas(Map<Integer, List<Celda>> values) {
+		List<Celda> cellList;
+		int cellValue;
+		boolean correctness, correcto = true;
+		
+		for (Entry<Integer, List<Celda>> e : values.entrySet()) {
+			cellValue = e.getKey();
+			cellList = e.getValue();
+			
+			if (cellValue == -1) {
+				for (Celda c : cellList) {
+					if (!c.isCorrecta()) {
+						c.setCorrecta(true);
+					}
+				}
+			}
+			else {
+//				correctness = cellList.size() == 1;
+//				for (Celda c : cellList) {
+//					if (c.isCorrecta() != correctness) {
+//						c.setCorrecta(correctness);
+//					}
+//				}
+				
+				if (cellList.size() == 1) {
+					cellList.get(0).setCorrecta(true);
+				}
+				else {
+					for (Celda c : cellList)
+						c.setCorrecta(false);
+				}
+				
+//				if (!correctness)
+//					correcto = false;
+				
+			}
+		}
+		return correcto;
 	}
 
 	/**
@@ -202,164 +317,21 @@ public class Juego {
 	}
 	
 	public void accionar(Celda c, int valor_nuevo) {
-		/*
-		 * c.actualizarValor(valor);
-		 * 
-		 * if (valor != -1) { this.celdasRestantes--; checkInsertion(c); }
-		 * 
-		 * if (celdasRestantes == 0) ;//Chequear victoria
-		 */
-		
-		int valor_viejo = c.getValor();
-		c.actualizarValor(valor_nuevo);
-		
-		controlValorRemovido(c, valor_viejo);
-		controlValorInsertado(c, valor_nuevo);
-		
+		c.setValor(valor_nuevo);
+		controlGeneral();
 	}
-
-	private void controlValorRemovido(Celda celda, int valor_viejo) {
-		List<Celda> repeticiones;
-		int fila = celda.getFila(), col = celda.getColumna();
-		
-		repeticiones = repeticionesFila(fila, valor_viejo);
-		if (repeticiones.size() == 1)
-			repeticiones.get(0).actualizarImagen(true);
-		
-		repeticiones = repeticionesColumna(col, valor_viejo);
-		if (repeticiones.size() == 1)
-			repeticiones.get(0).actualizarImagen(true);
-		
-		repeticiones = repeticionesPanel(fila, col, valor_viejo);
-		if (repeticiones.size() == 1)
-			repeticiones.get(0).actualizarImagen(true);
-	}
-
-	private void controlValorInsertado(Celda celda, int valor_nuevo) {
-		List<Celda> repeticiones;
-		int fila = celda.getFila(), col = celda.getColumna();
 	
-		repeticiones = repeticionesFila(fila, valor_nuevo);
-		if (repeticiones.size() > 1)
-			for (Celda c : repeticiones)
-				c.actualizarImagen(false);
-		
-		repeticiones = repeticionesColumna(col, valor_nuevo);
-		if (repeticiones.size() > 1)
-			for (Celda c : repeticiones)
-				c.actualizarImagen(false);
-		
-		repeticiones = repeticionesPanel(fila, col, valor_nuevo);
-		if (repeticiones.size() > 1)
-			for (Celda c : repeticiones)
-				c.actualizarImagen(false);
+	public Celda[][] getTablero() {
+		return tablero;
 	}
-
-	private List<Celda> repeticionesFila(int fila, int valor) {
-		List<Celda> repeticiones = new ArrayList<Celda>();
-		Celda c;
-		
-		for (int i = 0; i < 9; i++) {
-			c = tablero[fila][i];
-			if (c.getValor() == valor)
-				repeticiones.add(c);
-		}
-		
-		return repeticiones;
+	
+	public int cantidadCeldasLinea() {
+		return tablero.length;
 	}
-
-	private List<Celda> repeticionesColumna(int col, int valor) {
-		List<Celda> repeticiones = new ArrayList<Celda>();
-		Celda c;
-		
-		for (int i = 0; i < 9; i++) {
-			c = tablero[i][col];
-			if (c.getValor() == valor)
-				repeticiones.add(c);
-		}
-		
-		return repeticiones;
+	
+	public int cantidadPanelesLinea() {
+		return (int) Math.sqrt(tablero.length);
 	}
-
-	private List<Celda> repeticionesPanel(int fila, int col, int valor) {
-		List<Celda> repeticiones = new ArrayList<Celda>();
-		Celda c;
-
-		int fila_panel = ((int) fila/3) * 3;
-		int col_panel = ((int) col/3) * 3;
-		
-		for (int i = fila_panel; i < fila_panel+3; i++) {
-			for (int j = col_panel; j < col_panel+3; j++) {
-				c = tablero[i][j];
-				if (c.getValor() == valor)
-					repeticiones.add(c);
-			}
-		}
-		
-		return repeticiones;
-	}
-
-	private void checkInsertion(Celda celda) {
-		int valor = celda.getValor();
-		int fila = celda.getFila();
-		int col = celda.getColumna();
-		boolean error = false;
-		
-		
-		//Chequear intersección
-		for (int i = 0; i < 9; i++) {
-			Celda c_aux;
-			
-			c_aux = tablero[fila][i];
-			if (c_aux.getValor() == valor && c_aux != celda) {
-				c_aux.actualizarImagen(false);
-				error = true;
-				System.out.println("Conflicto con " + valor);
-			}
-			
-			c_aux = tablero[i][col];
-			if (c_aux.getValor() == valor && c_aux != celda) {
-				c_aux.actualizarImagen(false);
-				error = true;
-				System.out.println("Conflicto con " + valor);
-			}
-			
-		}
-		
-		//Chequear panel
-		int fila_panel = fila/3; fila_panel *= 3;
-		int col_panel = col/3; col_panel *= 3;
-		for (int i = fila_panel; i < fila_panel+3; i++) {
-			for (int j = col_panel; j < col_panel+3; j++) {
-				Celda c_aux = tablero[i][j];
-				if (c_aux.getValor() == valor && c_aux != celda) {
-					c_aux.actualizarImagen(false);
-					error = true;
-					System.out.println("Conflicto con " + valor);
-				}
-			}
-		}
-		
-		if (error) {
-			celda.actualizarImagen(false);
-		}
-		else {
-			celda.actualizarImagen(true);
-		}
-//		else {
-//			//Si la inserción fue correcta, restablece por correcto por si antes hubiera habido incorrecto
-//			//NO SIRVE HACER ESTO
-//			for (int i = 0; i < 9; i++) {
-//				tablero[fila][i].actualizarImagen(true);
-//				tablero[i][col].actualizarImagen(true);
-//			}
-//			for (int i = fila_panel; i < fila_panel+3; i++) {
-//				for (int j = col_panel; j < col_panel+3; j++) {
-//					tablero[i][j].actualizarImagen(true);
-//				}
-//			}
-//		}
-	}
-
+	
 }
  

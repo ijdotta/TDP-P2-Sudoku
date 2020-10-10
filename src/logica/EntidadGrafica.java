@@ -1,47 +1,80 @@
 package logica;
 
+import java.awt.Color;
+import java.awt.Image;
+
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 
 public class EntidadGrafica {
 	
-	protected ImageIcon grafico;
-	protected String[][] imagenes;
+	protected JButton celdaGrafica;
+	protected String[] imagenes;
 	
 	/**
-	 * 
+	 * Crea la entidad gráfica de la celda.
+	 * Carga sus imagenes.
 	 */
 	public EntidadGrafica() {
-		grafico = new ImageIcon();
-		imagenes = new String[10][2];
+		imagenes = new String[10];
 		for (int i = 0; i < 9; i++) {
-			imagenes[i][0] = "src/img/n" + (i+1) + ".png";
-			imagenes[i][1] = "src/img/r" + (i+1) + ".png";
+			imagenes[i] = "src/img/n" + (i+1) + ".png";
 		}
-		imagenes[9][0] = "src/img/blank.png";
+		imagenes[9] = "src/img/blank.png";
+		
+		/*Necesito que cada entidad gráfica cree su propio botón para poder actualiar la imagen desde que es creada
+		 * Sino, la GUI tiene que forzar la actualización a través del juego; preguntando el valor de cada celda*/
+		celdaGrafica = new JButton();
 	}
 	
-	/**
-	 * 
-	 * @param valor
-	 * @param correcto
-	 */
-	public void actualizar(int valor, boolean correcto) {
-		int type;
-		if (1 <= valor && valor <= 9) {
-			type = correcto ? 0 : 1;
-			grafico.setImage( (new ImageIcon(imagenes[valor-1][type])).getImage() );
-		}
-		if (valor == -1) {
-			grafico.setImage( (new ImageIcon(imagenes[9][0])).getImage() );
+	
+	public void actualizar(int valor) {
+		if (valor == -1 || (1 <= valor && valor <= 9) ) {
+			
+			//Determinar índice de imagen
+			valor = valor == -1 ? 9 : valor-1;
+			
+			ImageIcon icon = new ImageIcon(imagenes[valor]);
+			Image img = icon.getImage();
+			
+			///verrrrrrrrrrrrrrrrr
+			int width, height;
+			width = height = celdaGrafica.getWidth();
+			
+			if (height == 0)
+				width = height = 100;
+			//verrrrrrrrrrrrrrrrr
+//			Image newimg = img.getScaledInstance(celdaGrafica.getWidth(), celdaGrafica.getHeight(), java.awt.Image.SCALE_SMOOTH);
+			Image newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+			icon.setImage(newimg);
+			celdaGrafica.setIcon(icon);
+			celdaGrafica.setBackground(Color.WHITE); //Ver si no conviene tener un método que permite pintarla directamente
+			celdaGrafica.repaint();//Es necesario??
 		}
 	}
 	
-	public void setGrafico(ImageIcon grafico) {
-		this.grafico = grafico;
+	public void setCorrecta(boolean esCorrecta) {
+		if (esCorrecta) {
+			celdaGrafica.setBackground(Color.WHITE);
+		}
+		else {
+			celdaGrafica.setBackground(Color.RED);
+		}
+		celdaGrafica.repaint();
+	}
+
+	public JButton getCeldaGrafica() {
+		return celdaGrafica;
 	}
 	
-	public ImageIcon getGrafico() {
-		return grafico;
+	public void setCeldaGrafica(JButton celdaGrafica) {
+		this.celdaGrafica = celdaGrafica;
+		//Actualizar imagen!!
+		/* Idea:
+		 * Cuando el juego crea la celda, esta aun no tiene botón asociado.
+		 * Entonces, al asociarle el botón, la celda debe actualizar la imagen por primera vez,
+		 * para que aparezca en el juego.
+		 */
 	}
 	
 }
