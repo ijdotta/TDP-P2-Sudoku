@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -13,6 +14,7 @@ import java.awt.event.MouseListener;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -23,6 +25,16 @@ import javax.swing.border.EmptyBorder;
 import logica.Juego;
 import javax.swing.border.LineBorder;
 
+/**
+ * 
+ * @author ignac
+ *
+ * OBSERVACIÓN: el tamaño de la ventana y la creación de celdas, paneles, botones, etc. varía según la cantidad de números
+ * con la que se desee jugar (siempre y cuando la cantidad x sea tal que x = n^2 para 1 <= n <= x) por sugerencia de José.
+ * 
+ * En los archivos fuente se incluye un tablero de 16x16 y uno de 25x25 para verlo en funcionamiento, pero no así las imagenes
+ * de dichos números.
+ */
 public class GUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -52,18 +64,28 @@ public class GUI extends JFrame {
 	 */
 	public GUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 500, 650);
+//		setBounds(100, 100, 500, 650);
+//		setBounds(300, 100, 500, 625);
+		setResizable(false);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 		
 		setTitle("Sudoku");
-		juego = new Juego("src/files/sk_bien.txt", 9);
+		juego = new Juego("src/files/sk_bien_16.txt", 9);
 		
-//		if (juego.getTablero() == null) {
-//			finalizarJuego(false);
-//		}
+		if (juego.getTablero() == null) {
+			finalizarJuego(false);
+		}
+		
+		//Informacion sobre el juego
+		int cantPanelesLinea = juego.cantidadPanelesLinea();
+		int cantCeldasLineaPanel = juego.cantidadCeldasLineaPanel();
+		int cantCeldasLinea = juego.cantidadCeldasLinea();
+		
+		//Tamaño de la ventana segun la cantidad de celdas
+		setBounds(300, 100, 500, 575 + 50*(cantCeldasLinea/10 +1));
 		
 		//Paleta de colores:
 		Color mainBgr = new Color(80, 150, 255);
@@ -86,19 +108,16 @@ public class GUI extends JFrame {
 		
 		//Paneles del juego:
 		JPanel panelInfo, panelTablero, panelBotones;
-		Dimension dimPanelesAux = new Dimension(450, 50);
-		Dimension dimTablero = new Dimension(450, 450);
+		Dimension dimPanelInfo, dimTablero, dimPanelBotones; 
+		dimPanelInfo = new Dimension(450, 50);
+		dimTablero = new Dimension(450, 450);
+		dimPanelBotones = new Dimension(450, 50 * (cantCeldasLinea / 10 + 1));
 		
 		panelInfo = new JPanel();
-		panelInfo.setBorder(new LineBorder(Color.BLACK, 2));
-		panelInfo.setPreferredSize(dimPanelesAux);
+		panelInfo.setBorder(new LineBorder(Color.BLACK, 3));
+		panelInfo.setPreferredSize(dimPanelInfo);
 		top.add(panelInfo);
 		panelInfo.setBackground(panelBgr); //Testing
-		
-		panelBotones = new JPanel();
-		panelBotones.setPreferredSize(dimPanelesAux);
-		bottom.add(panelBotones);
-		panelBotones.setBackground(panelBgr); //Testing
 		
 		panelTablero = new JPanel();
 		panelTablero.setBorder(new LineBorder(Color.BLACK));
@@ -106,13 +125,19 @@ public class GUI extends JFrame {
 		center.add(panelTablero);
 		panelTablero.setBackground(Color.BLACK); //Testing
 		
+		panelBotones = new JPanel();
+		panelBotones.setBorder(new LineBorder(Color.BLACK, 3));
+		panelBotones.setPreferredSize(dimPanelBotones);
+		bottom.add(panelBotones);
+		panelBotones.setBackground(panelBgr); //Testing
+		
 		//DISEÑO PANEL INFORMACIÓN
 		JPanel clockPanel = new JPanel();
 		JLabel [] timeDisplay = new JLabel[8];
 		JLabel digit;
 		Dimension clockPanelDim, digitDim;
 		
-		digitDim = new Dimension(25, 25);
+		digitDim = new Dimension(50, 50);
 		clockPanelDim = new Dimension( (int)digitDim.getWidth() * timeDisplay.length, (int) digitDim.getHeight());
 		
 		clockPanel.setLayout(new FlowLayout());
@@ -128,25 +153,33 @@ public class GUI extends JFrame {
 		}
 		
 		panelInfo.setLayout(null);
-		clockPanel.setBounds(100, 12, 250, 26);
+//		clockPanel.setBounds(100, 12, 250, 26);
+		clockPanel.setBounds(0, 0, 450, 50);
 		clockPanel.setVisible(true);
 		panelInfo.add(clockPanel);
 		
+		//Colons:
+		ImageIcon icon = new ImageIcon("src/img/ClockNumbers/colon.png");
+		Image img = icon.getImage();
+		Image newimg = img.getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH);
+		icon.setImage(newimg);
+		timeDisplay[2].setIcon(icon); timeDisplay[5].setIcon(icon);
+		//Colons-
 		
 		configurarReloj(timeDisplay);
 		
 		//DISEÑO TABLERO
-		panelTablero.setLayout(new GridLayout(3, 3, 1, 1));
+		panelTablero.setLayout(new GridLayout(cantPanelesLinea, cantPanelesLinea, 1, 1));
 		
-		JPanel[][] tmpPanel = new JPanel[3][3]; //Solo se usa en la inicialización
+		JPanel[][] tmpPanel = new JPanel[cantPanelesLinea][cantPanelesLinea]; //Solo se usa en la inicialización
 		
 		//Tratar de definir la cantidad de celdas en funcion del juego
 		
 		//Añadir 9 subpaneles
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3; j++) {
+		for (int i = 0; i < cantPanelesLinea; i++) {
+			for (int j = 0; j < cantPanelesLinea; j++) {
 				JPanel subPanel = new JPanel();
-				subPanel.setLayout(new GridLayout(3, 3));
+				subPanel.setLayout(new GridLayout(cantCeldasLineaPanel, cantCeldasLineaPanel));
 				subPanel.setBackground(Color.BLACK); //Testing
 				panelTablero.add(subPanel);
 				tmpPanel[i][j] = subPanel;
@@ -155,9 +188,9 @@ public class GUI extends JFrame {
 		}
 		
 		//Añadir celdas
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
-				JPanel subPanel = tmpPanel[i/3][j/3];
+		for (int i = 0; i < cantCeldasLinea; i++) {
+			for (int j = 0; j < cantCeldasLinea; j++) {
+				JPanel subPanel = tmpPanel[i/cantPanelesLinea][j/cantPanelesLinea];
 				JButton celdaGrafica = juego.getCelda(i, j).getEntidadGrafica().getCeldaGrafica();
 
 				celdaGrafica.setActionCommand(i+","+j);
@@ -211,15 +244,16 @@ public class GUI extends JFrame {
 		}
 		
 		//DISEÑO PANEL BOTONES
-		panelBotones.setLayout(new GridLayout(1, 10));
-		for (int i = 0; i < 10; i++) {
+		panelBotones.setLayout(new GridLayout(cantCeldasLinea/10 + 1, cantCeldasLinea+1));
+//		panelBotones.setLayout(new FlowLayout());
+		for (int i = 0; i < cantCeldasLinea+1; i++) {
 			JButton boton = new JButton();
 			boton.setText((i+1)+""); //Testing
 			boton.setActionCommand(Integer.toString(i+1));
 			boton.setBackground(Color.WHITE);
 			panelBotones.add(boton);
 			
-			if (i == 9) {
+			if (i == cantCeldasLinea) {
 				boton.setText("X");
 				boton.setActionCommand("-1");
 			}
@@ -244,7 +278,7 @@ public class GUI extends JFrame {
 						selCeldaGrafica = null;
 						
 						//Testing
-						finalizarJuego("Victoria!");
+//						TODO finalizarJuego(true);
 						
 					}
 				}
@@ -264,9 +298,22 @@ public class GUI extends JFrame {
 			@Override
 			public void run() {
 				String time = clock.getTime();
+				JLabel digit;
+				int width, height;
 				
 				for (int i = timeDisplay.length-1; i >= 0; i--) {
-					timeDisplay[i].setText(time.charAt(i)+"");
+					digit = timeDisplay[i]; 
+					
+					if (i == 2 || i == 5)
+						continue;
+					
+					ImageIcon icon = new ImageIcon("src/img/ClockNumbers/Clock (" + time.charAt(i) + ").png");
+					Image img = icon.getImage();
+					Image newimg = img.getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH);
+					icon.setImage(newimg);
+					digit.setIcon(icon);
+					
+//					timeDisplay[i].setText(time.charAt(i)+"");
 				}
 				
 				System.out.println("Reloj GUI :: " + clock.getTime());
@@ -278,10 +325,25 @@ public class GUI extends JFrame {
 		
 	}
 
-	private void finalizarJuego(String msg) {
+	private void finalizarJuego(boolean b) {
+		String msg;
+		if (b) {
+			msg = "¡Felicitaciones! \n Usted ha ganado el juego. ";
+		}
+		else {
+			msg = "Ha ocurrido un error en la carga del juego. ";
+		}
 		
 		JOptionPane.showMessageDialog(this, msg);
-		int res = JOptionPane.showConfirmDialog(contentPane, "Salir?");
+		
+		int res = 1;
+		if (b) {
+			res = JOptionPane.showConfirmDialog(contentPane, "Salir?");
+		}
+		else {
+			System.exit(0);
+		}
+		
 		
 		if (res == 0)
 			System.exit(0);

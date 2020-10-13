@@ -42,7 +42,7 @@ public class EntidadGrafica {
 			width = height = celdaGrafica.getWidth();
 			
 			if (height == 0)
-				width = height = 100;
+				width = height = 10;
 			//verrrrrrrrrrrrrrrrr
 //			Image newimg = img.getScaledInstance(celdaGrafica.getWidth(), celdaGrafica.getHeight(), java.awt.Image.SCALE_SMOOTH);
 			Image newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
@@ -50,6 +50,9 @@ public class EntidadGrafica {
 			celdaGrafica.setIcon(icon);
 			celdaGrafica.setBackground(Color.WHITE); //Ver si no conviene tener un método que permite pintarla directamente
 			celdaGrafica.repaint();//Es necesario??
+			
+			//Creo que no hace falta el getScaledInstance si se crea un imgicn nuevo
+			//RTA:: SÍ HACE FALTA
 		}
 	}
 	
@@ -65,16 +68,6 @@ public class EntidadGrafica {
 
 	public JButton getCeldaGrafica() {
 		return celdaGrafica;
-	}
-	
-	public void setCeldaGrafica(JButton celdaGrafica) {
-		this.celdaGrafica = celdaGrafica;
-		//Actualizar imagen!!
-		/* Idea:
-		 * Cuando el juego crea la celda, esta aun no tiene botón asociado.
-		 * Entonces, al asociarle el botón, la celda debe actualizar la imagen por primera vez,
-		 * para que aparezca en el juego.
-		 */
 	}
 	
 }

@@ -22,64 +22,80 @@ public class Juego {
 	protected int celdasRestantes;
 	protected Celda [][] tablero;
 	
-	/**
-	 * Crea e inicializa un Sudoku con valores desde 1 hasta size. Requiere size un cuadrado perfecto.
-	 * @param path Ruta al archivo de texto.
-	 * @param size Cantidad de números.
-	 * @
-	 */
-	public Juego(String path, int size) {
+	public Juego(String path, int size, int cantEliminar) {
 		BufferedReader br;
 		String line;
 		String [] row;
 		
-		tablero = new Celda[9][9];
-		celdasRestantes = 81;
-		
 		try {
+			
+			if (!isPerfectSquare(size)) {
+				throw new Exception("Error en la creación del tablero (size no es cuadrado perfecto). ");
+			}
+			
+			tablero = new Celda[size][size];
+			celdasRestantes = size * size;
+			
 			br = new BufferedReader(new FileReader(path));
 			
-			for (int i = 0; i < 9; i++) {
+			for (int i = 0; i < size; i++) {
 				line = br.readLine();
 				
-				if (line == null) //TODO Preguntar si usamos excepciones o qué
-					break;
+				if (line == null) {
+					br.close();
+					throw new Exception("Error en la creación del tablero (faltan filas). ");
+				}
 				
 				row = line.trim().split(" ");
 				
-				if (row.length < 9) //TODO Preguntar si usamos excepciones o qué
-					break;
+				if (row.length < size) {
+					br.close();
+					throw new Exception("Error en la creación del tablero (faltan columnas). ");
+				}
 				
-				for (int j = 0; j < 9; j++) {
+				for (int j = 0; j < size; j++) {
 					tablero[i][j] = new Celda(Integer.parseInt(row[j]), i, j);
 				}
 				
 			}
 			
 			br.close();
-		} catch (IOException e) {
+			
+			if (controlGeneral()) {
+				System.out.println("BIENNNNNNNNNN");
+			}
+			else {
+				System.out.println("MALLLLLLLLLLL");
+				throw new Exception("Error en la carga del juego (la solución original es incorrecta).");
+			}
+			
+		} catch (Exception e) {
 			e.printStackTrace();
+			tablero = null;
+			return;
 		}
+
 		
-		if (controlGeneral()) {
-			System.out.println("BIENNNNNNNNNN");
-		}
-		else {
-			System.out.println("MALLLLLLLLLLL");
-		}
 		
 		//For debugging
 		printTablero();
-		
-		eliminarCeldas(5);
-		
+//		
+		eliminarCeldas(10);
+//		
 		printTablero();
-//		tablero = null;
+	}
+	
+	public Juego(String path, int size) {
+		this(path, size, 40);
+	}
+	
+	public Juego() {
+		this("src/files/sk_bien.txt", 9);
 	}
 	
 	private boolean isPerfectSquare(int n) {
 		int i = 0;
-		boolean perfectSquare = false;
+		boolean perfectSquare = n == 1; //Si es 1 no entra al while
 		
 		while (i <= (n/2) && !perfectSquare) {
 			perfectSquare = i*i == n;
@@ -112,196 +128,122 @@ public class Juego {
 		}
 	}
 	
-	private boolean controlGeneralOLD() {
-		boolean correcto = true;
+	public boolean controlGeneral() {
+		Celda c;
 		
-		for (int i = 0; i < 9; i++) {
-			controlFila(i);
-			controlColumna(i);
-			controlPanel(i);
-		}
-		
-		return correcto;
-	}
-	
-	public void restore() {
-		for (int i = 0; i < tablero.length; i++)
-			for (int j = 0; j < tablero[i].length; j++)
-				tablero[i][j].setCorrecta(true);
-	}
-	
-	private boolean controlGeneral() {
-		boolean correcto = true;
-		
-		restore();
-		
+		//Restaurar
 		for (int i = 0; i < tablero.length; i++) {
-			for (int j = 0; j < tablero[0].length; j++) {
-				controlar(i, j);
-			}
-		}
-		
-		return correcto;
-	}
-
-	private void controlar(int i, int j) {
-		Celda celda_control = tablero[i][j];
-		Celda actual;
-		int valor = celda_control.getValor();
-		boolean hayError;
-		
-		for (int k = 0; k < 9; k++) {
-			actual = tablero[i][k];
-			if (valor != -1 && actual != celda_control && actual.getValor() == valor) {
-				celda_control.setCorrecta(false);
-			}
-			
-			actual = tablero[k][j];
-			if (valor != -1 && actual != celda_control && actual.getValor() == valor) {
-				celda_control.setCorrecta(false);
-			}
-			
-		}
-		
-		int f_panel = ((int)i/3) * 3;
-		int c_panel = ((int)j/3) * 3;
-		
-		for (int f = f_panel; f < f_panel+3; f++) {
-			for (int c = c_panel; c < c_panel+3; c++) {
-				actual = tablero[f][c];
-				if (valor != -1 && actual != celda_control && actual.getValor() == valor) {
-					celda_control.setCorrecta(false);
+			for (int j = 0; j < tablero[i].length; j++) {
+				c = tablero[i][j];
+				if (!c.isCorrecta()) {
+					c.setCorrecta(true);
 				}
 			}
 		}
 		
-	}
-
-	private boolean controlFila(int i) {
-		Map<Integer, List<Celda>> values = new HashMap<Integer, List<Celda>>();
-		List<Celda> cellList;
-		Celda current;
-		int value;
-		
-		for (int j = 0; j < 9; j++) {
-			current = tablero[i][j];
-			value = current.getValor();
-			
-			cellList = values.get(value);
-			
-			if (cellList == null) {
-				cellList = new ArrayList<Celda>();
-				values.put(value, cellList);
-			}
-			
-//			System.out.println("Celda ("+i+", "+j+") = " + value);
-			
-			cellList.add(current);
-		}
-		
-		return corregirCeldas(values);
+		//buscar incorrectas
+		return buscarIncorrectas();
 	}
 	
-
-	private boolean controlColumna(int i) {
-		Map<Integer, List<Celda>> values = new HashMap<Integer, List<Celda>>();
-		List<Celda> cellList;
-		Celda current;
-		int value;
+	private boolean buscarIncorrectas() {
+		boolean todasCorrectas = true;
+		Map<Integer, Celda> map;
+		Celda celda_actual, celda_anterior;
+		int valor, cantCeldasLinea, cantPanelesLinea, cantCeldasLineaPanel;
 		
-		for (int j = 0; j < 9; j++) {
-			current = tablero[j][i];
-			value = current.getValor();
+		cantCeldasLinea = cantidadCeldasLinea();
+		
+		//Control por fila
+		for (int i = 0; i < cantCeldasLinea; i++) {
+			map = new HashMap<Integer, Celda>();
 			
-			cellList = values.get(value);
-			if (cellList == null) {
-				cellList = new ArrayList<Celda>();
-				values.put(value, cellList);
-			}
-			
-			cellList.add(current);
-		}
-		
-		return corregirCeldas(values);
-	}
-
-	private boolean controlPanel(int i) {
-		Map<Integer, List<Celda>> values = new HashMap<Integer, List<Celda>>();
-		List<Celda> cellList;
-		Celda current;
-		int value;
-		int fila_ini = ((int) i/3) * 3, col_ini = i%3 * 3;
-		int long_panel = 3;
-		
-		for (int f = fila_ini; f < fila_ini+long_panel; f++) {
-			for (int c = col_ini; c < col_ini+long_panel; c++) {
-				current = tablero[f][c];
-				value = current.getValor();
+			//Control de fila i
+			for (int j = 0; j < cantCeldasLinea; j++) {
+				celda_actual = tablero[i][j];
+				valor = celda_actual.getValor();
 				
-				cellList = values.get(value);
-				if (cellList == null) {
-					cellList = new ArrayList<Celda>();
-					values.put(value, cellList);
-				}
+				if (valor != -1) {
+					celda_anterior = map.put(valor, celda_actual);
 				
-				cellList.add(current);
-			}
-		}
-		
-		return corregirCeldas(values);
-	}
-	
-	private boolean corregirCeldas(Map<Integer, List<Celda>> values) {
-		List<Celda> cellList;
-		int cellValue;
-		boolean correctness, correcto = true;
-		
-		for (Entry<Integer, List<Celda>> e : values.entrySet()) {
-			cellValue = e.getKey();
-			cellList = e.getValue();
-			
-			if (cellValue == -1) {
-				for (Celda c : cellList) {
-					if (!c.isCorrecta()) {
-						c.setCorrecta(true);
+					if (celda_anterior != null) {
+						todasCorrectas = false;
+						celda_actual.setCorrecta(false);
+				
+						//Previene de actualizar dos veces la misma celda
+						if (celda_anterior.isCorrecta()) {
+							celda_anterior.setCorrecta(false);
+						}
 					}
 				}
 			}
-			else {
-//				correctness = cellList.size() == 1;
-//				for (Celda c : cellList) {
-//					if (c.isCorrecta() != correctness) {
-//						c.setCorrecta(correctness);
-//					}
-//				}
+		}
+		
+		//Control por columna
+		for (int i = 0; i < cantCeldasLinea; i++) {
+			map = new HashMap<Integer, Celda>();
+			
+			//Control de columna i
+			for (int j = 0; j < cantCeldasLinea; j++) {
+				celda_actual = tablero[j][i];
+				valor = celda_actual.getValor();
 				
-				if (cellList.size() == 1) {
-					cellList.get(0).setCorrecta(true);
+				if (valor != -1) {
+					celda_anterior = map.put(valor, celda_actual);
+				
+					if (celda_anterior != null) {
+						todasCorrectas = false;
+						
+						if (celda_actual.isCorrecta()) {
+							celda_actual.setCorrecta(false);
+						}
+				
+						if (celda_anterior.isCorrecta()) {
+							celda_anterior.setCorrecta(false);
+						}
+					}
 				}
-				else {
-					for (Celda c : cellList)
-						c.setCorrecta(false);
-				}
-				
-//				if (!correctness)
-//					correcto = false;
-				
 			}
 		}
-		return correcto;
-	}
-
-	/**
-	 * FOR DEBUGGING - DELETE
-	 */
-	private void printTablero() {
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
-				System.out.print(tablero[i][j].getValor() + " ");
+		
+		//Control por panel
+		cantPanelesLinea = cantidadPanelesLinea();
+		cantCeldasLineaPanel = cantidadCeldasLineaPanel();
+		
+		for (int i = 0; i < cantPanelesLinea; i++) {
+			for (int j = 0; j < cantPanelesLinea; j++) {
+				
+				//Control del panel(i,j)
+				for (int f = i; f < i+cantCeldasLineaPanel; f++) {
+					map = new HashMap<Integer, Celda>();
+					
+					for (int c = j; c < j+cantCeldasLineaPanel; c++) {
+						celda_actual = tablero[f][c];
+						valor = celda_actual.getValor();
+						
+						if (valor != -1) {
+							celda_anterior = map.put(valor, celda_actual);
+						
+							if (celda_anterior != null) {
+								todasCorrectas = false;
+								
+								if (celda_actual.isCorrecta()) {
+									celda_actual.setCorrecta(false);
+								}
+						
+								if (celda_anterior.isCorrecta()) {
+									celda_anterior.setCorrecta(false);
+								}
+							}
+						}
+					}
+				}
 			}
-			System.out.println();
 		}
+		
+		return todasCorrectas;
 	}
+	
+	/******************/
 	
 	/**
 	 * Retorna la celda en la posición (f,c)
@@ -310,7 +252,7 @@ public class Juego {
 	 * @return ...
 	 */
 	public Celda getCelda(int f, int c) {
-		if (0 <= f && f < 9 && 0 <= c && c < 9)
+		if (0 <= f && f < tablero.length && 0 <= c && c < tablero[0].length)
 			return tablero[f][c];
 		else
 			return null;
@@ -326,11 +268,28 @@ public class Juego {
 	}
 	
 	public int cantidadCeldasLinea() {
+		System.out.println(tablero.length);
 		return tablero.length;
+	}
+	
+	public int cantidadCeldasLineaPanel() {
+		return (int) Math.sqrt(tablero.length);
 	}
 	
 	public int cantidadPanelesLinea() {
 		return (int) Math.sqrt(tablero.length);
+	}
+
+	/**
+	 * FOR DEBUGGING - DELETE
+	 */
+	private void printTablero() {
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				System.out.print(tablero[i][j].getValor() + " ");
+			}
+			System.out.println();
+		}
 	}
 	
 }
