@@ -3,18 +3,16 @@ package logica;
 public class Celda {
 	
 	protected int valor;
-	protected int fila;
-	protected int columna;
 	protected boolean correcta;
 	protected boolean editable;
 	protected EntidadGrafica entidadGrafica;
+	protected boolean modificada;
 	
-	public Celda(int valor, int f, int j) {
+	public Celda(int valor) {
 		this.valor = valor;
 		this.editable = false;
-		this.fila = f;
-		this.columna = j;
 		this.correcta = true;
+		this.modificada = true;
 		
 		this.entidadGrafica = new EntidadGrafica();
 		this.entidadGrafica.actualizar(valor);
@@ -22,8 +20,8 @@ public class Celda {
 	
 	public void setValor(int valor) {
 		this.valor = valor;
-		entidadGrafica.actualizar(valor);
-		entidadGrafica.setCorrecta(correcta);
+		this.entidadGrafica.actualizar(valor);
+		this.modificada = true;
 	}
 	
 	public void setEditable(boolean editable) {
@@ -32,24 +30,14 @@ public class Celda {
 
 	public void setCorrecta(boolean esCorrecta) {
 		this.correcta = esCorrecta;
-		entidadGrafica.setCorrecta(esCorrecta);
+	}
+	
+	public void setModificada(boolean modificada) {
+		this.modificada = modificada;
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
 	public int getValor() {
 		return valor;
-	}
-	
-	public int getFila() {
-		return fila;
-		
-	}
-	
-	public int getColumna() {
-		return columna;
 	}
 	
 	public EntidadGrafica getEntidadGrafica() {
@@ -62,5 +50,9 @@ public class Celda {
 
 	public boolean isCorrecta() {
 		return correcta;
+	}
+	
+	public boolean isModificada() {
+		return modificada;
 	}
 }

@@ -13,6 +13,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -22,6 +26,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import logica.Celda;
 import logica.Juego;
 import javax.swing.border.LineBorder;
 
@@ -38,10 +43,13 @@ import javax.swing.border.LineBorder;
 public class GUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+	private static Logger logger;
 	
 	private JPanel contentPane;
 	private JButton selCeldaGrafica;
 	private Juego juego;
+	private JButton[][] tableroGrafico;
+	private Timer timer;
 
 	/**
 	 * Launch the application.
@@ -64,19 +72,20 @@ public class GUI extends JFrame {
 	 */
 	public GUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		setBounds(100, 100, 500, 650);
-//		setBounds(300, 100, 500, 625);
 		setResizable(false);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 		
+		inicializarLogger();
+		
 		setTitle("Sudoku");
-		juego = new Juego("src/files/sk_bien_16.txt", 9);
+		juego = new Juego("src/files/sk_bien.txt", 9, 1);
 		
 		if (juego.getTablero() == null) {
-			finalizarJuego(false);
+			logger.severe("No se puedo iniciar el juego. ");
+			finalizarJuego();
 		}
 		
 		//Informacion sobre el juego
@@ -84,12 +93,17 @@ public class GUI extends JFrame {
 		int cantCeldasLineaPanel = juego.cantidadCeldasLineaPanel();
 		int cantCeldasLinea = juego.cantidadCeldasLinea();
 		
+		
+		//DISEÑO GENERAL
+		
 		//Tamaño de la ventana segun la cantidad de celdas
 		setBounds(300, 100, 500, 575 + 50*(cantCeldasLinea/10 +1));
 		
 		//Paleta de colores:
-		Color mainBgr = new Color(80, 150, 255);
+//		Color mainBgr = new Color(80, 150, 255);
+		Color mainBgr = new Color(0, 152, 199);
 		Color panelBgr = Color.WHITE; //new Color(130, 200, 255);
+		Color bordeCeldasColor = Color.BLACK;
 		
 		//Disposición general:
 		JPanel top, center, bottom;
@@ -120,10 +134,10 @@ public class GUI extends JFrame {
 		panelInfo.setBackground(panelBgr); //Testing
 		
 		panelTablero = new JPanel();
-		panelTablero.setBorder(new LineBorder(Color.BLACK));
+		panelTablero.setBorder(new LineBorder(bordeCeldasColor));
 		panelTablero.setPreferredSize(dimTablero);
 		center.add(panelTablero);
-		panelTablero.setBackground(Color.BLACK); //Testing
+		panelTablero.setBackground(bordeCeldasColor); //Testing
 		
 		panelBotones = new JPanel();
 		panelBotones.setBorder(new LineBorder(Color.BLACK, 3));
@@ -131,7 +145,11 @@ public class GUI extends JFrame {
 		bottom.add(panelBotones);
 		panelBotones.setBackground(panelBgr); //Testing
 		
-		//DISEÑO PANEL INFORMACIÓN
+		//FIN DISEÑO GENERAL
+		
+		
+		//DISEÑO PANEL INFO
+		
 		JPanel clockPanel = new JPanel();
 		JLabel [] timeDisplay = new JLabel[8];
 		JLabel digit;
@@ -168,14 +186,16 @@ public class GUI extends JFrame {
 		
 		configurarReloj(timeDisplay);
 		
-		//DISEÑO TABLERO
+		//FIN DISEÑO PANEL INFO
+		
+		
+		//DISEÑO PANEL TABLERO
 		panelTablero.setLayout(new GridLayout(cantPanelesLinea, cantPanelesLinea, 1, 1));
 		
-		JPanel[][] tmpPanel = new JPanel[cantPanelesLinea][cantPanelesLinea]; //Solo se usa en la inicialización
+		tableroGrafico = new JButton[cantCeldasLinea][cantCeldasLinea];
+		JPanel[][] tmpPanel = new JPanel[cantPanelesLinea][cantPanelesLinea];
 		
-		//Tratar de definir la cantidad de celdas en funcion del juego
-		
-		//Añadir 9 subpaneles
+		//Añadir subpaneles
 		for (int i = 0; i < cantPanelesLinea; i++) {
 			for (int j = 0; j < cantPanelesLinea; j++) {
 				JPanel subPanel = new JPanel();
@@ -191,9 +211,12 @@ public class GUI extends JFrame {
 		for (int i = 0; i < cantCeldasLinea; i++) {
 			for (int j = 0; j < cantCeldasLinea; j++) {
 				JPanel subPanel = tmpPanel[i/cantPanelesLinea][j/cantPanelesLinea];
-				JButton celdaGrafica = juego.getCelda(i, j).getEntidadGrafica().getCeldaGrafica();
-
+				JButton celdaGrafica = new JButton();
+				
+				tableroGrafico[i][j] = celdaGrafica;
+				
 				celdaGrafica.setActionCommand(i+","+j);
+				celdaGrafica.setIcon(juego.getCelda(i, j).getEntidadGrafica().getGrafico());
 				subPanel.add(celdaGrafica);
 				
 				if (!juego.getCelda(i, j).isEditable()) {
@@ -243,16 +266,24 @@ public class GUI extends JFrame {
 			}
 		}
 		
+		actualizarTablero();
+		//FIN DISEÑO PANEL TABLERO
+		
 		//DISEÑO PANEL BOTONES
 		panelBotones.setLayout(new GridLayout(cantCeldasLinea/10 + 1, cantCeldasLinea+1));
-//		panelBotones.setLayout(new FlowLayout());
 		for (int i = 0; i < cantCeldasLinea+1; i++) {
 			JButton boton = new JButton();
-			boton.setText((i+1)+""); //Testing
 			boton.setActionCommand(Integer.toString(i+1));
 			boton.setBackground(Color.WHITE);
 			panelBotones.add(boton);
 			
+			//Establecer imagen
+			if (i != cantCeldasLinea) { //TODO acomodar esto
+			ImageIcon newIcon = new ImageIcon("src/img/n" + (i+1) + ".png");
+			Image newimage = newIcon.getImage().getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
+			newIcon.setImage(newimage);
+			boton.setIcon(newIcon);
+			}
 			if (i == cantCeldasLinea) {
 				boton.setText("X");
 				boton.setActionCommand("-1");
@@ -263,23 +294,20 @@ public class GUI extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (selCeldaGrafica != null) {
-						Color bgr;
 						String[] index = selCeldaGrafica.getActionCommand().split(",");
 						int i, j, valor;
 						
 						i = Integer.parseInt(index[0]);
 						j = Integer.parseInt(index[1]);
 						valor = Integer.parseInt(boton.getActionCommand());
-						
 						juego.accionar(juego.getCelda(i, j), valor);
 						
-						bgr = juego.getCelda(i, j).isCorrecta() ? Color.WHITE : Color.RED;
-						selCeldaGrafica.setBackground(bgr);
+						actualizarTablero();
 						selCeldaGrafica = null;
 						
-						//Testing
-//						TODO finalizarJuego(true);
-						
+						if (juego.isVictoria()) {
+							victoria();
+						}
 					}
 				}
 			});
@@ -287,8 +315,25 @@ public class GUI extends JFrame {
 		}
 	}
 	
+	private void inicializarLogger() {
+		if (logger == null) {
+			
+			logger = Logger.getLogger(GUI.class.getName());
+			
+			Handler hnd = new ConsoleHandler();
+			hnd.setLevel(Level.ALL);
+			logger.addHandler(hnd);
+			
+			logger.setLevel(Level.ALL);
+			
+			Logger rootLoger = logger.getParent();
+			for (Handler h : rootLoger.getHandlers())
+				h.setLevel(Level.OFF);
+		}
+	}
+
 	private void configurarReloj(JLabel[] timeDisplay) {
-		Timer timer = new Timer();
+		timer = new Timer();
 		Clock clock = new Clock();
 		
 		int refreshRate = 1000; //in ms
@@ -325,44 +370,56 @@ public class GUI extends JFrame {
 		
 	}
 
-	private void finalizarJuego(boolean b) {
-		String msg;
-		if (b) {
-			msg = "¡Felicitaciones! \n Usted ha ganado el juego. ";
-		}
-		else {
-			msg = "Ha ocurrido un error en la carga del juego. ";
-		}
-		
-		JOptionPane.showMessageDialog(this, msg);
-		
-		int res = 1;
-		if (b) {
-			res = JOptionPane.showConfirmDialog(contentPane, "Salir?");
-		}
-		else {
-			System.exit(0);
+	private void finalizarJuego() {
+		timer.cancel();
+		JOptionPane.showMessageDialog(this, "Ha ocurrido un error en la carga del juego. ");
+		System.exit(0);
+	}
+	
+	private void victoria() {
+		for (int i = 0; i < tableroGrafico.length; i++) {
+			for (int j = 0; j < tableroGrafico.length; j++) {
+				tableroGrafico[i][j].setBackground(Color.GREEN);
+				tableroGrafico[i][j].setEnabled(false);
+			}
 		}
 		
+		timer.cancel();
+		
+		JOptionPane.showMessageDialog(this, "¡Felicitaciones!\nHa completado el tablero correctamente. ");
+		int res = JOptionPane.showConfirmDialog(this, "¿Desea salir?");
 		
 		if (res == 0)
 			System.exit(0);
-		else {
-			//bloquear tablero
-		}
-		System.out.println(res);
-//		System.exit(0);
 	}
 	
-	//actualizarReloj(String s)
-	/*Reloj {
-	 * 		gui.actualizarReloj(...) ¿?
-	 * }
-	 */
-	
-	/*
-	 * Error en la carga del archivo: la logica falla, la gráfica de alguna manera lo identifica y luego termina el juego
-	 * Pienso con el tablero NULL
-	 */
+	private void actualizarTablero() {
+		JButton celdaGrafica;
+		Celda celda;
+		
+		for (int i = 0; i < tableroGrafico.length; i++) {
+			for (int j = 0; j < tableroGrafico[i].length; j++) {
+				
+				celdaGrafica = tableroGrafico[i][j];
+				celda = juego.getCelda(i, j);
+				Color bgr = celda.isCorrecta() ? Color.WHITE : new Color(230,90,69);
+				
+				celdaGrafica.setBackground(bgr);
+				
+				if (celda.isModificada()) {
+					celda.setModificada(false);
+					
+					ImageIcon grafico = celda.getEntidadGrafica().getGrafico();
+					Image img = celda.getEntidadGrafica().getGrafico().getImage();
+					Image newimg = img.getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
+					grafico.setImage(newimg);
+					
+				}
+				
+				celdaGrafica.repaint();
+				
+			}
+		}
+	}
 
 }

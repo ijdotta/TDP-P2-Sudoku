@@ -11,6 +11,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -19,10 +23,16 @@ import java.util.Set;
  */
 public class Juego {
 	
-	protected int celdasRestantes;
+	private static Logger logger;
+	
+	protected int cantCeldasCompletasCorrectas;
 	protected Celda [][] tablero;
 	
 	public Juego(String path, int size, int cantEliminar) {
+		
+		inicializarLogger();
+		
+		//Inicializar juego
 		BufferedReader br;
 		String line;
 		String [] row;
@@ -30,11 +40,12 @@ public class Juego {
 		try {
 			
 			if (!isPerfectSquare(size)) {
-				throw new Exception("Error en la creación del tablero (size no es cuadrado perfecto). ");
+				logger.severe("Error en la creación del tablero (size no es cuadrado perfecto). ");
+				throw new Exception();
 			}
 			
 			tablero = new Celda[size][size];
-			celdasRestantes = size * size;
+			cantCeldasCompletasCorrectas = size * size;
 			
 			br = new BufferedReader(new FileReader(path));
 			
@@ -43,18 +54,20 @@ public class Juego {
 				
 				if (line == null) {
 					br.close();
-					throw new Exception("Error en la creación del tablero (faltan filas). ");
+					logger.severe("Error en la creación del tablero (faltan filas). ");
+					throw new Exception();
 				}
 				
 				row = line.trim().split(" ");
 				
 				if (row.length < size) {
 					br.close();
-					throw new Exception("Error en la creación del tablero (faltan columnas). ");
+					logger.severe("Error en la creación del tablero (faltan columnas). ");
+					throw new Exception();
 				}
 				
 				for (int j = 0; j < size; j++) {
-					tablero[i][j] = new Celda(Integer.parseInt(row[j]), i, j);
+					tablero[i][j] = new Celda(Integer.parseInt(row[j]));
 				}
 				
 			}
@@ -62,29 +75,39 @@ public class Juego {
 			br.close();
 			
 			if (controlGeneral()) {
-				System.out.println("BIENNNNNNNNNN");
+				logger.finest("La solución inicial es correcta. ");
 			}
 			else {
-				System.out.println("MALLLLLLLLLLL");
-				throw new Exception("Error en la carga del juego (la solución original es incorrecta).");
+				logger.severe("Error en la carga del juego (la solución inicial es incorrecta).");
+				throw new Exception();
 			}
 			
 		} catch (Exception e) {
-			e.printStackTrace();
 			tablero = null;
 			return;
 		}
 
+		eliminarCeldas(cantEliminar);
 		
-		
-		//For debugging
-		printTablero();
-//		
-		eliminarCeldas(10);
-//		
-		printTablero();
 	}
 	
+	private void inicializarLogger() {
+		if (logger == null) {
+			
+			logger = Logger.getLogger(Juego.class.getName());
+			
+			Handler hnd = new ConsoleHandler();
+			hnd.setLevel(Level.ALL);
+			logger.addHandler(hnd);
+			
+			logger.setLevel(Level.ALL);
+			
+			Logger rootLoger = logger.getParent();
+			for (Handler h : rootLoger.getHandlers())
+				h.setLevel(Level.OFF);
+		}
+	}
+
 	public Juego(String path, int size) {
 		this(path, size, 40);
 	}
@@ -105,25 +128,31 @@ public class Juego {
 		return perfectSquare;
 	}
 	
-	/**
-	 * Eliminar celdas al azar.
-	 * @param cant Cantidad de celdas distintas a eliminar.
-	 */
 	private void eliminarCeldas(int cant) {
 		Random r = new Random();
+		Celda celda;
 		
-		if (cant >= 81)
-			cant = 81;
+		int cantCeldasLinea = cantidadCeldasLinea();
+		int cantMax = (int) Math.pow(cantCeldasLinea, 2);
 		
-		this.celdasRestantes -= cant;
+		if (cant > cantMax) {
+			logger.info(cant + " supera la cantidad de celdas del tablero. Se eliminarán " + cantMax);
+			cant = cantMax;
+		}
+		
+		this.cantCeldasCompletasCorrectas -= cant;
 		
 		int j = 0;
 		while (j < cant) {
-			int f = r.nextInt(9), c = r.nextInt(9);
-			if (tablero[f][c].getValor() != -1) {
-				tablero[f][c].setValor(-1);
-				tablero[f][c].setEditable(true);
+			int f = r.nextInt(cantCeldasLinea), c = r.nextInt(cantCeldasLinea);
+			celda = tablero[f][c];
+			
+			if (celda.getValor() != -1) {
+				celda.setValor(-1);
+				celda.setEditable(true);
 				j++;
+				
+				logger.finest("Se eliminó la celda (" + f + ", " + c + ")");
 			}
 		}
 	}
@@ -140,6 +169,9 @@ public class Juego {
 				}
 			}
 		}
+		
+		cantCeldasCompletasCorrectas = (int) Math.pow(cantidadCeldasLinea(), 2);
+		logger.fine("Se restauró el tablero a estado correcto. ");
 		
 		//buscar incorrectas
 		return buscarIncorrectas();
@@ -168,12 +200,20 @@ public class Juego {
 					if (celda_anterior != null) {
 						todasCorrectas = false;
 						celda_actual.setCorrecta(false);
+						
+						logger.info("Se actualizó celda incorrecta. ");
 				
 						//Previene de actualizar dos veces la misma celda
 						if (celda_anterior.isCorrecta()) {
 							celda_anterior.setCorrecta(false);
+							cantCeldasCompletasCorrectas--;
+							
+							logger.info("Se actualizó celda incorrecta. ");
 						}
 					}
+				}
+				else {
+					cantCeldasCompletasCorrectas--;
 				}
 			}
 		}
@@ -195,12 +235,19 @@ public class Juego {
 						
 						if (celda_actual.isCorrecta()) {
 							celda_actual.setCorrecta(false);
+							cantCeldasCompletasCorrectas--;
+							logger.info("Se actualizó celda incorrecta. ");
 						}
 				
 						if (celda_anterior.isCorrecta()) {
 							celda_anterior.setCorrecta(false);
+							cantCeldasCompletasCorrectas--;
+							logger.info("Se actualizó celda incorrecta. ");
 						}
 					}
+				}
+				else {
+					cantCeldasCompletasCorrectas--;
 				}
 			}
 		}
@@ -228,12 +275,19 @@ public class Juego {
 								
 								if (celda_actual.isCorrecta()) {
 									celda_actual.setCorrecta(false);
+									cantCeldasCompletasCorrectas--;
+									logger.info("Se actualizó celda incorrecta. ");
 								}
 						
 								if (celda_anterior.isCorrecta()) {
 									celda_anterior.setCorrecta(false);
+									cantCeldasCompletasCorrectas--;
+									logger.info("Se actualizó celda incorrecta. ");
 								}
 							}
+						}
+						else {
+							cantCeldasCompletasCorrectas--;
 						}
 					}
 				}
@@ -243,23 +297,19 @@ public class Juego {
 		return todasCorrectas;
 	}
 	
-	/******************/
-	
-	/**
-	 * Retorna la celda en la posición (f,c)
-	 * @param f Fila de la celda
-	 * @param c Columna de la celda
-	 * @return ...
-	 */
 	public Celda getCelda(int f, int c) {
-		if (0 <= f && f < tablero.length && 0 <= c && c < tablero[0].length)
+		if (0 <= f && f < tablero.length && 0 <= c && c < tablero[0].length) {
 			return tablero[f][c];
-		else
+		}
+		else {
+			logger.warning("Índice (" + f + ", " + c + ") fuera de los límites del tablero. ");
 			return null;
+		}
 	}
 	
 	public void accionar(Celda c, int valor_nuevo) {
 		c.setValor(valor_nuevo);
+		logger.fine("Se actualizó el valor de una celda. ");
 		controlGeneral();
 	}
 	
@@ -280,16 +330,12 @@ public class Juego {
 		return (int) Math.sqrt(tablero.length);
 	}
 
-	/**
-	 * FOR DEBUGGING - DELETE
-	 */
-	private void printTablero() {
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
-				System.out.print(tablero[i][j].getValor() + " ");
-			}
-			System.out.println();
+	public boolean isVictoria() {
+		boolean victoria = cantCeldasCompletasCorrectas == Math.pow(cantidadCeldasLinea(), 2);  
+		if (victoria) {
+			logger.info("Se detectó victoria en el juego. ");
 		}
+		return victoria;
 	}
 	
 }

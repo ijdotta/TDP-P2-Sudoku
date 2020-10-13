@@ -9,20 +9,17 @@ public class Clock {
 	private TimerTask task;
 	private int ms_period;
 	private int hh, mm, ss;
-	private long ms;
 	
 	public Clock() {
 		
 		hh = mm = ss = 0;
 		ms_period = 1000;
-		ms = 0;
 		
 		task = new TimerTask() {
 			
 			@Override
 			public void run() {
 				
-				ms += ms_period;
 				ss++;
 				if (ss == 60) {
 					mm++;
