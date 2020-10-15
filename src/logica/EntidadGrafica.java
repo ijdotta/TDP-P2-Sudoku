@@ -16,19 +16,14 @@ public class EntidadGrafica {
 			imagenes[i] = "src/img/n" + (i) + ".png";
 		}
 		
-		
 	}
 	
 	
 	public void actualizar(int valor) {
-		if (valor == -1 || valor > 9)
+		if (valor < 0 || valor > 9)
 			valor = 0;
 		
-		if (0 <= valor && valor <= 9) {
-			
-			grafico.setImage( (new ImageIcon(imagenes[valor])).getImage() );
-			
-		}
+		grafico.setImage( (new ImageIcon(imagenes[valor])).getImage() );
 		
 	}
 	

@@ -258,12 +258,12 @@ public class Juego {
 		
 		for (int i = 0; i < cantPanelesLinea; i++) {
 			for (int j = 0; j < cantPanelesLinea; j++) {
+				map = new HashMap<Integer, Celda>();
 				
 				//Control del panel(i,j)
-				for (int f = i; f < i+cantCeldasLineaPanel; f++) {
-					map = new HashMap<Integer, Celda>();
+				for (int f = i*cantCeldasLineaPanel; f < i*cantCeldasLineaPanel+cantCeldasLineaPanel; f++) {
 					
-					for (int c = j; c < j+cantCeldasLineaPanel; c++) {
+					for (int c = j*cantCeldasLineaPanel; c < j*cantCeldasLineaPanel+cantCeldasLineaPanel; c++) {
 						celda_actual = tablero[f][c];
 						valor = celda_actual.getValor();
 						
@@ -318,7 +318,6 @@ public class Juego {
 	}
 	
 	public int cantidadCeldasLinea() {
-		System.out.println(tablero.length);
 		return tablero.length;
 	}
 	

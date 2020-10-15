@@ -60,6 +60,7 @@ public class GUI extends JFrame {
 				try {
 					GUI frame = new GUI();
 					frame.setVisible(true);
+//					frame.actualizarTablero();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -81,7 +82,7 @@ public class GUI extends JFrame {
 		inicializarLogger();
 		
 		setTitle("Sudoku");
-		juego = new Juego("src/files/sk_bien.txt", 9, 1);
+		juego = new Juego("src/files/sk_bien.txt", 9, 15);
 		
 		if (juego.getTablero() == null) {
 			logger.severe("No se puedo iniciar el juego. ");
@@ -155,10 +156,10 @@ public class GUI extends JFrame {
 		JLabel digit;
 		Dimension clockPanelDim, digitDim;
 		
-		digitDim = new Dimension(50, 50);
+		digitDim = new Dimension(44, 44);
 		clockPanelDim = new Dimension( (int)digitDim.getWidth() * timeDisplay.length, (int) digitDim.getHeight());
 		
-		clockPanel.setLayout(new FlowLayout());
+		clockPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		clockPanel.setPreferredSize(clockPanelDim);
 		clockPanel.setBackground(panelBgr);
 		
@@ -170,9 +171,7 @@ public class GUI extends JFrame {
 			clockPanel.add(digit);
 		}
 		
-		panelInfo.setLayout(null);
-//		clockPanel.setBounds(100, 12, 250, 26);
-		clockPanel.setBounds(0, 0, 450, 50);
+		panelInfo.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		clockPanel.setVisible(true);
 		panelInfo.add(clockPanel);
 		
@@ -194,6 +193,8 @@ public class GUI extends JFrame {
 		
 		tableroGrafico = new JButton[cantCeldasLinea][cantCeldasLinea];
 		JPanel[][] tmpPanel = new JPanel[cantPanelesLinea][cantPanelesLinea];
+		Dimension dimCelda = new Dimension((int) dimTablero.getWidth()/cantCeldasLinea,
+													 (int) dimTablero.getHeight()/cantCeldasLinea);
 		
 		//Añadir subpaneles
 		for (int i = 0; i < cantPanelesLinea; i++) {
@@ -215,6 +216,7 @@ public class GUI extends JFrame {
 				
 				tableroGrafico[i][j] = celdaGrafica;
 				
+				celdaGrafica.setPreferredSize(dimCelda);
 				celdaGrafica.setActionCommand(i+","+j);
 				celdaGrafica.setIcon(juego.getCelda(i, j).getEntidadGrafica().getGrafico());
 				subPanel.add(celdaGrafica);
@@ -344,24 +346,28 @@ public class GUI extends JFrame {
 			public void run() {
 				String time = clock.getTime();
 				JLabel digit;
-				int width, height;
+				Dimension dim;
 				
 				for (int i = timeDisplay.length-1; i >= 0; i--) {
 					digit = timeDisplay[i]; 
 					
-					if (i == 2 || i == 5)
-						continue;
+					if (i != 2 && i != 5) {
 					
-					ImageIcon icon = new ImageIcon("src/img/ClockNumbers/Clock (" + time.charAt(i) + ").png");
-					Image img = icon.getImage();
-					Image newimg = img.getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH);
-					icon.setImage(newimg);
-					digit.setIcon(icon);
-					
-//					timeDisplay[i].setText(time.charAt(i)+"");
+						dim = digit.getPreferredSize();
+						int width = (int) dim.getWidth();
+						int height = (int) dim.getHeight();
+						
+						ImageIcon icon = new ImageIcon("src/img/ClockNumbers/Clock (" + time.charAt(i) + ").png");
+						Image img = icon.getImage();
+						Image newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+						icon.setImage(newimg);
+						digit.setIcon(icon);
+						
+					}
+//					timeDisplay[i].setText(time.charAt(i)+""); TODO
 				}
 				
-				System.out.println("Reloj GUI :: " + clock.getTime());
+//				System.out.println("Reloj GUI :: " + clock.getTime());
 				
 			}
 		};
@@ -371,7 +377,8 @@ public class GUI extends JFrame {
 	}
 
 	private void finalizarJuego() {
-		timer.cancel();
+		if (timer != null)
+			timer.cancel();
 		JOptionPane.showMessageDialog(this, "Ha ocurrido un error en la carga del juego. ");
 		System.exit(0);
 	}
@@ -406,12 +413,16 @@ public class GUI extends JFrame {
 				
 				celdaGrafica.setBackground(bgr);
 				
+				Dimension dim = celdaGrafica.getPreferredSize();
+				
 				if (celda.isModificada()) {
 					celda.setModificada(false);
 					
+					int width = (int) dim.getWidth();
+					int height = (int) dim.getHeight();
 					ImageIcon grafico = celda.getEntidadGrafica().getGrafico();
 					Image img = celda.getEntidadGrafica().getGrafico().getImage();
-					Image newimg = img.getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
+					Image newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
 					grafico.setImage(newimg);
 					
 				}
