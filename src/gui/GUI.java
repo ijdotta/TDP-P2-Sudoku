@@ -9,8 +9,7 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.ConsoleHandler;
@@ -25,14 +24,14 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 import logica.Celda;
 import logica.Juego;
-import javax.swing.border.LineBorder;
 
 /**
  * 
- * @author ignac
+ * @author Ignacio Joaquín Dotta
  *
  * OBSERVACIÓN: el tamaño de la ventana y la creación de celdas, paneles, botones, etc. varía según la cantidad de números
  * con la que se desee jugar (siempre y cuando la cantidad x sea tal que x = n^2 para 1 <= n <= x) por sugerencia de José.
@@ -60,7 +59,6 @@ public class GUI extends JFrame {
 				try {
 					GUI frame = new GUI();
 					frame.setVisible(true);
-//					frame.actualizarTablero();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -97,13 +95,12 @@ public class GUI extends JFrame {
 		
 		//DISEÑO GENERAL
 		
-		//Tamaño de la ventana segun la cantidad de celdas
+		//Tamaño de la ventana según la cantidad de celdas
 		setBounds(300, 100, 500, 575 + 50*(cantCeldasLinea/10 +1));
 		
 		//Paleta de colores:
-//		Color mainBgr = new Color(80, 150, 255);
 		Color mainBgr = new Color(0, 152, 199);
-		Color panelBgr = Color.WHITE; //new Color(130, 200, 255);
+		Color panelBgr = Color.WHITE;
 		Color bordeCeldasColor = Color.BLACK;
 		
 		//Disposición general:
@@ -125,31 +122,31 @@ public class GUI extends JFrame {
 		JPanel panelInfo, panelTablero, panelBotones;
 		Dimension dimPanelInfo, dimTablero, dimPanelBotones; 
 		dimPanelInfo = new Dimension(450, 50);
-		dimTablero = new Dimension(450, 450);
+		dimTablero = new Dimension(450, 450); //Lo quiero fijo, si aumenta la cantidad de celdas, éstas serán más pequeñas
 		dimPanelBotones = new Dimension(450, 50 * (cantCeldasLinea / 10 + 1));
 		
 		panelInfo = new JPanel();
 		panelInfo.setBorder(new LineBorder(Color.BLACK, 3));
 		panelInfo.setPreferredSize(dimPanelInfo);
 		top.add(panelInfo);
-		panelInfo.setBackground(panelBgr); //Testing
+		panelInfo.setBackground(panelBgr);
 		
 		panelTablero = new JPanel();
 		panelTablero.setBorder(new LineBorder(bordeCeldasColor));
 		panelTablero.setPreferredSize(dimTablero);
 		center.add(panelTablero);
-		panelTablero.setBackground(bordeCeldasColor); //Testing
+		panelTablero.setBackground(bordeCeldasColor);
 		
 		panelBotones = new JPanel();
 		panelBotones.setBorder(new LineBorder(Color.BLACK, 3));
 		panelBotones.setPreferredSize(dimPanelBotones);
 		bottom.add(panelBotones);
-		panelBotones.setBackground(panelBgr); //Testing
+		panelBotones.setBackground(panelBgr);
 		
 		//FIN DISEÑO GENERAL
 		
 		
-		//DISEÑO PANEL INFO
+		//DISEÑO PANEL INFORMACION
 		
 		JPanel clockPanel = new JPanel();
 		JLabel [] timeDisplay = new JLabel[8];
@@ -167,7 +164,6 @@ public class GUI extends JFrame {
 			digit = timeDisplay[i] = new JLabel();
 			digit.setVisible(true);
 			digit.setPreferredSize(digitDim);
-			digit.setBackground(Color.BLUE);
 			clockPanel.add(digit);
 		}
 		
@@ -175,13 +171,13 @@ public class GUI extends JFrame {
 		clockPanel.setVisible(true);
 		panelInfo.add(clockPanel);
 		
-		//Colons:
-		ImageIcon icon = new ImageIcon("src/img/ClockNumbers/colon.png");
+		//Inserta los ':' separadores del reloj
+		ImageIcon icon = new ImageIcon("src/img/Reloj/colon.png");
 		Image img = icon.getImage();
-		Image newimg = img.getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH);
+		Image newimg = img.getScaledInstance((int)digitDim.getWidth(), (int) digitDim.getHeight(), java.awt.Image.SCALE_SMOOTH);
 		icon.setImage(newimg);
-		timeDisplay[2].setIcon(icon); timeDisplay[5].setIcon(icon);
-		//Colons-
+		timeDisplay[2].setIcon(icon); 
+		timeDisplay[5].setIcon(icon);
 		
 		configurarReloj(timeDisplay);
 		
@@ -194,7 +190,7 @@ public class GUI extends JFrame {
 		tableroGrafico = new JButton[cantCeldasLinea][cantCeldasLinea];
 		JPanel[][] tmpPanel = new JPanel[cantPanelesLinea][cantPanelesLinea];
 		Dimension dimCelda = new Dimension((int) dimTablero.getWidth()/cantCeldasLinea,
-													 (int) dimTablero.getHeight()/cantCeldasLinea);
+										   (int) dimTablero.getHeight()/cantCeldasLinea);
 		
 		//Añadir subpaneles
 		for (int i = 0; i < cantPanelesLinea; i++) {
@@ -230,12 +226,6 @@ public class GUI extends JFrame {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						
-						//Si no es null
-							//Si es la misma -> solo eliminar seleccion
-							//Si es distinta -> eliminar seleccion y seleccionar nueva
-						//Sino
-							//Seleccionar nueva
-						
 						//Selecciona si no había seleccionada
 						if (selCeldaGrafica == null) {
 							selCeldaGrafica = celdaGrafica;
@@ -243,28 +233,29 @@ public class GUI extends JFrame {
 						}
 						else {
 							
+							//Deselecciona la actual
 							String[] index = selCeldaGrafica.getActionCommand().split(",");
 							int f, c;
 							
 							f = Integer.parseInt(index[0]);
 							c = Integer.parseInt(index[1]);
 							
-							//Desselecciona la anterior
+							//Restablecer color a "no seleccionada"
 							Color bgr = juego.getCelda(f, c).isCorrecta() ? Color.WHITE : Color.RED;
 							selCeldaGrafica.setBackground(bgr);
 							
 							if (selCeldaGrafica == celdaGrafica) {
 								selCeldaGrafica = null;
 							}
+							//Selecciona una celda nueva si no se presionó la misma
 							else {
 								selCeldaGrafica = celdaGrafica;
 								selCeldaGrafica.setBackground(Color.GRAY);
 							}
 						}
-						
 					}
-					
 				});
+				
 			}
 		}
 		
@@ -272,25 +263,32 @@ public class GUI extends JFrame {
 		//FIN DISEÑO PANEL TABLERO
 		
 		//DISEÑO PANEL BOTONES
+		ImageIcon newIcon;
+		Image newimage;
+		
 		panelBotones.setLayout(new GridLayout(cantCeldasLinea/10 + 1, cantCeldasLinea+1));
+		
 		for (int i = 0; i < cantCeldasLinea+1; i++) {
 			JButton boton = new JButton();
-			boton.setActionCommand(Integer.toString(i+1));
+			
 			boton.setBackground(Color.WHITE);
 			panelBotones.add(boton);
 			
-			//Establecer imagen
-			if (i != cantCeldasLinea) { //TODO acomodar esto
-			ImageIcon newIcon = new ImageIcon("src/img/n" + (i+1) + ".png");
-			Image newimage = newIcon.getImage().getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
-			newIcon.setImage(newimage);
-			boton.setIcon(newIcon);
+			if (i < cantCeldasLinea) {
+				newIcon = new ImageIcon("src/img/Numeros/n" + (i+1) + ".png");
+				boton.setActionCommand(Integer.toString(i+1));
 			}
-			if (i == cantCeldasLinea) {
-				boton.setText("X");
-				boton.setActionCommand("-1");
+			else {
+				newIcon = new ImageIcon("src/img/Numeros/borrar.png");
+				boton.setActionCommand("0");
 			}
 			
+			//Establecer imagen
+			newimage = newIcon.getImage().getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
+			newIcon.setImage(newimage);
+			boton.setIcon(newIcon);
+			
+			//Acción para insertar números
 			boton.addActionListener(new ActionListener() {
 				
 				@Override
@@ -317,28 +315,15 @@ public class GUI extends JFrame {
 		}
 	}
 	
-	private void inicializarLogger() {
-		if (logger == null) {
-			
-			logger = Logger.getLogger(GUI.class.getName());
-			
-			Handler hnd = new ConsoleHandler();
-			hnd.setLevel(Level.ALL);
-			logger.addHandler(hnd);
-			
-			logger.setLevel(Level.ALL);
-			
-			Logger rootLoger = logger.getParent();
-			for (Handler h : rootLoger.getHandlers())
-				h.setLevel(Level.OFF);
-		}
-	}
-
+	/**
+	 * Método auxiliar para activar el reloj del juego y configurar la actualización gráficamente.
+	 * @param timeDisplay Arreglo de labels de dígitos de reloj.
+	 */
 	private void configurarReloj(JLabel[] timeDisplay) {
 		timer = new Timer();
 		Clock clock = new Clock();
 		
-		int refreshRate = 1000; //in ms
+		int refreshRate = 1000;
 		
 		TimerTask actualizarReloj = new TimerTask() {
 			
@@ -347,6 +332,8 @@ public class GUI extends JFrame {
 				String time = clock.getTime();
 				JLabel digit;
 				Dimension dim;
+				ImageIcon icon;
+				Image img, newimg;
 				
 				for (int i = timeDisplay.length-1; i >= 0; i--) {
 					digit = timeDisplay[i]; 
@@ -357,18 +344,14 @@ public class GUI extends JFrame {
 						int width = (int) dim.getWidth();
 						int height = (int) dim.getHeight();
 						
-						ImageIcon icon = new ImageIcon("src/img/ClockNumbers/Clock (" + time.charAt(i) + ").png");
-						Image img = icon.getImage();
-						Image newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+						icon = new ImageIcon("src/img/Reloj/Clock (" + time.charAt(i) + ").png");
+						img = icon.getImage();
+						newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
 						icon.setImage(newimg);
 						digit.setIcon(icon);
 						
 					}
-//					timeDisplay[i].setText(time.charAt(i)+""); TODO
 				}
-				
-//				System.out.println("Reloj GUI :: " + clock.getTime());
-				
 			}
 		};
 		
@@ -376,13 +359,52 @@ public class GUI extends JFrame {
 		
 	}
 
-	private void finalizarJuego() {
-		if (timer != null)
-			timer.cancel();
-		JOptionPane.showMessageDialog(this, "Ha ocurrido un error en la carga del juego. ");
-		System.exit(0);
+	/**
+	 * Actualiza la imagen, el tamaño y el color de las celdas del tablero.
+	 */
+	private void actualizarTablero() {
+		JButton celdaGrafica;
+		Celda celda;
+		Dimension dim;
+		ImageIcon grafico;
+		Image img, newimg;
+		Color bgr;
+		int width, height;
+		
+		for (int i = 0; i < tableroGrafico.length; i++) {
+			for (int j = 0; j < tableroGrafico[i].length; j++) {
+				
+				celdaGrafica = tableroGrafico[i][j];
+				celda = juego.getCelda(i, j);
+				
+				//Actualizar color según si el valor es correcto
+				bgr = celda.isCorrecta() ? Color.WHITE : new Color(230,90,69);
+				celdaGrafica.setBackground(bgr);
+				
+				//Actualizar imagen del número (solo si ha cambiado)
+				if (celda.isModificada()) {
+					celda.setModificada(false);
+					
+					dim = celdaGrafica.getPreferredSize();
+					width = (int) dim.getWidth() - 2;
+					height = (int) dim.getHeight() - 2;
+					
+					grafico = celda.getEntidadGrafica().getGrafico();
+					img = celda.getEntidadGrafica().getGrafico().getImage();
+					newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+					grafico.setImage(newimg);
+					
+				}
+				
+				celdaGrafica.repaint();
+				
+			}
+		}
 	}
-	
+
+	/**
+	 * Comportamiento al detectar que el jugador finalizó el juego correctamente.
+	 */
 	private void victoria() {
 		for (int i = 0; i < tableroGrafico.length; i++) {
 			for (int j = 0; j < tableroGrafico.length; j++) {
@@ -399,37 +421,34 @@ public class GUI extends JFrame {
 		if (res == 0)
 			System.exit(0);
 	}
+
+	/**
+	 * Permite finaliar el juego cuando se detecta un error interno.
+	 */
+	private void finalizarJuego() {
+		if (timer != null)
+			timer.cancel();
+		JOptionPane.showMessageDialog(this, "Ha ocurrido un error en la carga del juego. ");
+		System.exit(0);
+	}
 	
-	private void actualizarTablero() {
-		JButton celdaGrafica;
-		Celda celda;
-		
-		for (int i = 0; i < tableroGrafico.length; i++) {
-			for (int j = 0; j < tableroGrafico[i].length; j++) {
-				
-				celdaGrafica = tableroGrafico[i][j];
-				celda = juego.getCelda(i, j);
-				Color bgr = celda.isCorrecta() ? Color.WHITE : new Color(230,90,69);
-				
-				celdaGrafica.setBackground(bgr);
-				
-				Dimension dim = celdaGrafica.getPreferredSize();
-				
-				if (celda.isModificada()) {
-					celda.setModificada(false);
-					
-					int width = (int) dim.getWidth();
-					int height = (int) dim.getHeight();
-					ImageIcon grafico = celda.getEntidadGrafica().getGrafico();
-					Image img = celda.getEntidadGrafica().getGrafico().getImage();
-					Image newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
-					grafico.setImage(newimg);
-					
-				}
-				
-				celdaGrafica.repaint();
-				
-			}
+	/**
+	 * Configura el logger de la GUI.
+	 */
+	private void inicializarLogger() {
+		if (logger == null) {
+			
+			logger = Logger.getLogger(GUI.class.getName());
+			
+			Handler hnd = new ConsoleHandler();
+			hnd.setLevel(Level.ALL);
+			logger.addHandler(hnd);
+			
+			logger.setLevel(Level.ALL);
+			
+			Logger rootLoger = logger.getParent();
+			for (Handler h : rootLoger.getHandlers())
+				h.setLevel(Level.OFF);
 		}
 	}
 

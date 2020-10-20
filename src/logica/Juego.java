@@ -2,15 +2,11 @@ package logica;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
+
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
-import java.util.Set;
+
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -28,6 +24,13 @@ public class Juego {
 	protected int cantCeldasCompletasCorrectas;
 	protected Celda [][] tablero;
 	
+	/**
+	 * Crea un nuevo juego Sudoku a partir de un archivo según la cantidad de valores permitidos indicados y elimina la
+	 * cantidad de celdas indicada.
+	 * @param path Ruta al archivo de texto que contiene la solución inicial.
+	 * @param size Cantidad de valores por fila (requiere size un cuadrado perfecto).
+	 * @param cantEliminar Cantidad de celdas que se deben eliminar para ser completadas por el jugador.
+	 */
 	public Juego(String path, int size, int cantEliminar) {
 		
 		inicializarLogger();
@@ -44,8 +47,8 @@ public class Juego {
 				throw new Exception();
 			}
 			
-			tablero = new Celda[size][size];
-			cantCeldasCompletasCorrectas = size * size;
+			this.tablero = new Celda[size][size];
+			this.cantCeldasCompletasCorrectas = size * size;
 			
 			br = new BufferedReader(new FileReader(path));
 			
@@ -67,7 +70,7 @@ public class Juego {
 				}
 				
 				for (int j = 0; j < size; j++) {
-					tablero[i][j] = new Celda(Integer.parseInt(row[j]));
+					this.tablero[i][j] = new Celda(Integer.parseInt(row[j]));
 				}
 				
 			}
@@ -75,7 +78,7 @@ public class Juego {
 			br.close();
 			
 			if (controlGeneral()) {
-				logger.finest("La solución inicial es correcta. ");
+				logger.fine("La solución inicial es correcta. ");
 			}
 			else {
 				logger.severe("Error en la carga del juego (la solución inicial es incorrecta).");
@@ -83,7 +86,7 @@ public class Juego {
 			}
 			
 		} catch (Exception e) {
-			tablero = null;
+			this.tablero = null;
 			return;
 		}
 
@@ -91,6 +94,25 @@ public class Juego {
 		
 	}
 	
+	/**
+	 * Crea un juego con la solución en el archivo de texto y cantidad de valores por fila indicados.
+	 * @param path Ruta al archivo de texto con la solución inicial.
+	 * @param size Cantidad de valores por fila (requiere size un cuadrado perfecto).
+	 */
+	public Juego(String path, int size) {
+		this(path, size, 40);
+	}
+	
+	/**
+	 * Crea un nuevo juego con una solución predefinida y tablero de 9x9.
+	 */
+	public Juego() {
+		this("src/files/sk_bien.txt", 9);
+	}
+	
+	/**
+	 * Inicializa el logger de la clase actual.
+	 */
 	private void inicializarLogger() {
 		if (logger == null) {
 			
@@ -108,17 +130,14 @@ public class Juego {
 		}
 	}
 
-	public Juego(String path, int size) {
-		this(path, size, 40);
-	}
-	
-	public Juego() {
-		this("src/files/sk_bien.txt", 9);
-	}
-	
+	/**
+	 * Determina si el valor recibido es un cuadrado perfecto.
+	 * @param n Numero a controlar.
+	 * @return true si n es un cuadrado perfecto.
+	 */
 	private boolean isPerfectSquare(int n) {
 		int i = 0;
-		boolean perfectSquare = n == 1; //Si es 1 no entra al while
+		boolean perfectSquare = n == 1;
 		
 		while (i <= (n/2) && !perfectSquare) {
 			perfectSquare = i*i == n;
@@ -128,36 +147,45 @@ public class Juego {
 		return perfectSquare;
 	}
 	
-	private void eliminarCeldas(int cant) {
+	/**
+	 * Elimina celdas al azar.
+	 * @param cantEliminar Cantidad de celdas a eliminar.
+	 */
+	private void eliminarCeldas(int cantEliminar) {
 		Random r = new Random();
 		Celda celda;
+		int contador;
 		
 		int cantCeldasLinea = cantidadCeldasLinea();
 		int cantMax = (int) Math.pow(cantCeldasLinea, 2);
 		
-		if (cant > cantMax) {
-			logger.info(cant + " supera la cantidad de celdas del tablero. Se eliminarán " + cantMax);
-			cant = cantMax;
+		if (cantEliminar > cantMax) {
+			logger.info(cantEliminar + " supera la cantidad de celdas del tablero. Se eliminarán " + cantMax);
+			cantEliminar = cantMax;
 		}
 		
-		this.cantCeldasCompletasCorrectas -= cant;
+		this.cantCeldasCompletasCorrectas -= cantEliminar;
 		
-		int j = 0;
-		while (j < cant) {
+		contador = 0;
+		while (contador < cantEliminar) {
 			int f = r.nextInt(cantCeldasLinea), c = r.nextInt(cantCeldasLinea);
 			celda = tablero[f][c];
 			
-			if (celda.getValor() != -1) {
-				celda.setValor(-1);
+			if (celda.getValor() != 0) {
+				celda.setValor(0);
 				celda.setEditable(true);
-				j++;
+				contador++;
 				
 				logger.finest("Se eliminó la celda (" + f + ", " + c + ")");
 			}
 		}
 	}
 	
-	public boolean controlGeneral() {
+	/**
+	 * Control completo del tablero.
+	 * @return true si no se encuentran errores.
+	 */
+	private boolean controlGeneral() {
 		Celda c;
 		
 		//Restaurar
@@ -173,13 +201,16 @@ public class Juego {
 		cantCeldasCompletasCorrectas = (int) Math.pow(cantidadCeldasLinea(), 2);
 		logger.fine("Se restauró el tablero a estado correcto. ");
 		
-		//buscar incorrectas
-		return buscarIncorrectas();
+		return controlCeldasEnConflicto();
 	}
 	
-	private boolean buscarIncorrectas() {
+	/**
+	 * Busca celdas en conflicto y las marca como incorrectas.
+	 * @return true si no hay celdas incorrectas.
+	 */
+	private boolean controlCeldasEnConflicto() {
 		boolean todasCorrectas = true;
-		Map<Integer, Celda> map;
+		Map<Integer, Celda> map; //Lo uso para controlar valores repetidos en un determinado área de búsqueda.
 		Celda celda_actual, celda_anterior;
 		int valor, cantCeldasLinea, cantPanelesLinea, cantCeldasLineaPanel;
 		
@@ -189,12 +220,13 @@ public class Juego {
 		for (int i = 0; i < cantCeldasLinea; i++) {
 			map = new HashMap<Integer, Celda>();
 			
-			//Control de fila i
+			//Control por columna de la fila i
 			for (int j = 0; j < cantCeldasLinea; j++) {
 				celda_actual = tablero[i][j];
 				valor = celda_actual.getValor();
 				
-				if (valor != -1) {
+				//Valor 0 representa celda vacía.
+				if (valor != 0) {
 					celda_anterior = map.put(valor, celda_actual);
 				
 					if (celda_anterior != null) {
@@ -222,12 +254,12 @@ public class Juego {
 		for (int i = 0; i < cantCeldasLinea; i++) {
 			map = new HashMap<Integer, Celda>();
 			
-			//Control de columna i
+			//Control por fila de la columna i
 			for (int j = 0; j < cantCeldasLinea; j++) {
 				celda_actual = tablero[j][i];
 				valor = celda_actual.getValor();
 				
-				if (valor != -1) {
+				if (valor != 0) {
 					celda_anterior = map.put(valor, celda_actual);
 				
 					if (celda_anterior != null) {
@@ -261,13 +293,13 @@ public class Juego {
 				map = new HashMap<Integer, Celda>();
 				
 				//Control del panel(i,j)
-				for (int f = i*cantCeldasLineaPanel; f < i*cantCeldasLineaPanel+cantCeldasLineaPanel; f++) {
+				for (int f = i*cantCeldasLineaPanel; f < (i+1)*cantCeldasLineaPanel; f++) {
 					
-					for (int c = j*cantCeldasLineaPanel; c < j*cantCeldasLineaPanel+cantCeldasLineaPanel; c++) {
+					for (int c = j*cantCeldasLineaPanel; c < (j+1)*cantCeldasLineaPanel; c++) {
 						celda_actual = tablero[f][c];
 						valor = celda_actual.getValor();
 						
-						if (valor != -1) {
+						if (valor != 0) {
 							celda_anterior = map.put(valor, celda_actual);
 						
 							if (celda_anterior != null) {
@@ -297,38 +329,69 @@ public class Juego {
 		return todasCorrectas;
 	}
 	
+	/**
+	 * Consulta la celda en el índice recibido.
+	 * @param f Fila de la celda.
+	 * @param c Columna de la celda.
+	 * @return Celda en el ínfice (f,c) o null si está fuera del tablero.
+	 */
 	public Celda getCelda(int f, int c) {
 		if (0 <= f && f < tablero.length && 0 <= c && c < tablero[0].length) {
 			return tablero[f][c];
 		}
 		else {
-			logger.warning("Índice (" + f + ", " + c + ") fuera de los límites del tablero. ");
+			logger.warning("Indice (" + f + ", " + c + ") fuera de los límites del tablero. ");
 			return null;
 		}
 	}
 	
-	public void accionar(Celda c, int valor_nuevo) {
-		c.setValor(valor_nuevo);
+	/**
+	 * Inserta el valor recibido en la celda recibida y controla la correctitud de la inserción.
+	 * @param c Celda objetivo.
+	 * @param valor Valor a insertar.
+	 */
+	public void accionar(Celda c, int valor) {
+		c.setValor(valor);
 		logger.fine("Se actualizó el valor de una celda. ");
 		controlGeneral();
 	}
 	
+	/**
+	 * Consulta el tablero del juego.
+	 * @return el tablero o null si hubo un fallo en el juego.
+	 */
 	public Celda[][] getTablero() {
 		return tablero;
 	}
 	
+	/**
+	 * Consulta la cantidad de celdas por línea del tablero (filas y columnas).
+	 * @return Cantidad de celdas por línea.
+	 */
 	public int cantidadCeldasLinea() {
 		return tablero.length;
 	}
 	
+	/**
+	 * Determina la cantidad de celdas por cada subpanel del juego.
+	 * @return Cantidad de celdas por subpanel.
+	 */
 	public int cantidadCeldasLineaPanel() {
 		return (int) Math.sqrt(tablero.length);
 	}
 	
+	/**
+	 * Determina la cantidad de subpaneles por línea del tablero.
+	 * @return Cantidad de subpaneles por línea.
+	 */
 	public int cantidadPanelesLinea() {
 		return (int) Math.sqrt(tablero.length);
 	}
 
+	/**
+	 * Consulta si se ha completado el tablero correctamente.
+	 * @return true si se terminó el juego.
+	 */
 	public boolean isVictoria() {
 		boolean victoria = cantCeldasCompletasCorrectas == Math.pow(cantidadCeldasLinea(), 2);  
 		if (victoria) {

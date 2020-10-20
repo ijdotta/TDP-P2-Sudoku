@@ -22,8 +22,8 @@ public class Clock {
 				
 				ss++;
 				if (ss == 60) {
-					mm++;
 					ss = 0;
+					mm++;
 					
 					if (mm == 60) {
 						mm = 0;
@@ -38,6 +38,10 @@ public class Clock {
 		
 	}
 	
+	/**
+	 * Retorna la tiempo transcurrido desde la inicialización.
+	 * @return tiempo en formato "hh:mm:ss"
+	 */
 	public String getTime() {
 		return String.format("%02d:%02d:%02d", hh, mm, ss);
 	}
