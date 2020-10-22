@@ -2,7 +2,8 @@ package logica;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -21,6 +22,7 @@ public class Juego {
 	
 	private static Logger logger;
 	
+	protected LocalTime start;
 	protected int cantCeldasCompletasCorrectas;
 	protected Celda [][] tablero;
 	
@@ -35,10 +37,10 @@ public class Juego {
 		
 		inicializarLogger();
 		
-		//Inicializar juego
 		BufferedReader br;
 		String line;
 		String [] row;
+		
 		
 		try {
 			
@@ -92,6 +94,7 @@ public class Juego {
 
 		eliminarCeldas(cantEliminar);
 		
+		start = LocalTime.now();
 	}
 	
 	/**
@@ -398,6 +401,14 @@ public class Juego {
 			logger.info("Se detectó victoria en el juego. ");
 		}
 		return victoria;
+	}
+	
+	/**
+	 * Devuelve el tiempo transcurrido entre el inicio del juego y la llamada al método.
+	 * @return Tiempo transcurrido.
+	 */
+	public Duration tiempoTranscurrido() {
+		return Duration.between(start, LocalTime.now());
 	}
 	
 }

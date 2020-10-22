@@ -9,7 +9,7 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.time.Duration;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.ConsoleHandler;
@@ -79,8 +79,8 @@ public class GUI extends JFrame {
 		
 		inicializarLogger();
 		
-		setTitle("Sudoku");
-		juego = new Juego("src/files/sk_bien.txt", 9, 15);
+		setTitle("Sudoku"); 
+		juego = new Juego("src/files/sk_bien.txt", 9, 5);
 		
 		if (juego.getTablero() == null) {
 			logger.severe("No se puedo iniciar el juego. ");
@@ -99,7 +99,8 @@ public class GUI extends JFrame {
 		setBounds(300, 100, 500, 575 + 50*(cantCeldasLinea/10 +1));
 		
 		//Paleta de colores:
-		Color mainBgr = new Color(0, 152, 199);
+//		Color mainBgr = new Color(0, 152, 199);
+		Color mainBgr = new Color(196, 215, 225);
 		Color panelBgr = Color.WHITE;
 		Color bordeCeldasColor = Color.BLACK;
 		
@@ -153,7 +154,7 @@ public class GUI extends JFrame {
 		JLabel digit;
 		Dimension clockPanelDim, digitDim;
 		
-		digitDim = new Dimension(44, 44);
+		digitDim = new Dimension(22, 44);
 		clockPanelDim = new Dimension( (int)digitDim.getWidth() * timeDisplay.length, (int) digitDim.getHeight());
 		
 		clockPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -172,7 +173,7 @@ public class GUI extends JFrame {
 		panelInfo.add(clockPanel);
 		
 		//Inserta los ':' separadores del reloj
-		ImageIcon icon = new ImageIcon("src/img/Reloj/colon.png");
+		ImageIcon icon = new ImageIcon("src/img/Reloj/separador.png");
 		Image img = icon.getImage();
 		Image newimg = img.getScaledInstance((int)digitDim.getWidth(), (int) digitDim.getHeight(), java.awt.Image.SCALE_SMOOTH);
 		icon.setImage(newimg);
@@ -321,7 +322,6 @@ public class GUI extends JFrame {
 	 */
 	private void configurarReloj(JLabel[] timeDisplay) {
 		timer = new Timer();
-		Clock clock = new Clock();
 		
 		int refreshRate = 1000;
 		
@@ -329,7 +329,11 @@ public class GUI extends JFrame {
 			
 			@Override
 			public void run() {
-				String time = clock.getTime();
+				Duration d = juego.tiempoTranscurrido();
+				String time = String.format("%02d:%02d:%02d", 
+		                					d.toHours(), 
+		                					d.toMinutesPart(), 
+		                					d.toSecondsPart());
 				JLabel digit;
 				Dimension dim;
 				ImageIcon icon;
@@ -343,8 +347,8 @@ public class GUI extends JFrame {
 						dim = digit.getPreferredSize();
 						int width = (int) dim.getWidth();
 						int height = (int) dim.getHeight();
-						
-						icon = new ImageIcon("src/img/Reloj/Clock (" + time.charAt(i) + ").png");
+
+						icon = new ImageIcon("src/img/Reloj/d" + time.charAt(i) + ".png");
 						img = icon.getImage();
 						newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
 						icon.setImage(newimg);
