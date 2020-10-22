@@ -1,22 +1,41 @@
 package logica;
 
+import java.net.URL;
+
 import javax.swing.ImageIcon;
 
 public class EntidadGrafica {
 	
 	protected ImageIcon grafico;
-	protected String[] imagenes;
+//	protected String[] imagenes;
+	protected URL[] imagenes;
 	
 	/**
 	 * Crea una entidad gráfica y define el conjunto de imágenes posibles.
 	 */
+//	public EntidadGrafica() {
+//		grafico = new ImageIcon();
+//		imagenes = new String[10];
+//		
+//		URL path = getClass().getResource("/img/Numeros/blank.png");
+//		
+//		imagenes[0] = path.getFile();
+//		for (int i = 1; i <= 9; i++) {
+//			path = getClass().getResource("/img/Numeros/n" + i + ".png");
+//			imagenes[i] = path.getFile();
+//		}
+//		
+//	}
 	public EntidadGrafica() {
 		grafico = new ImageIcon();
-		imagenes = new String[10];
+		imagenes = new URL[10];
 		
-		imagenes[0] = "src/img/Numeros/blank.png";
+		URL path = getClass().getResource("/img/Numeros/blank.png");
+		
+		imagenes[0] = path;
 		for (int i = 1; i <= 9; i++) {
-			imagenes[i] = "src/img/Numeros/n" + i + ".png";
+			path = getClass().getResource("/img/Numeros/n" + i + ".png");
+			imagenes[i] = path;
 		}
 		
 	}

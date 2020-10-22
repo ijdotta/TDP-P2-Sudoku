@@ -1,7 +1,8 @@
 package logica;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -51,8 +52,11 @@ public class Juego {
 			
 			this.tablero = new Celda[size][size];
 			this.cantCeldasCompletasCorrectas = size * size;
-			
-			br = new BufferedReader(new FileReader(path));
+
+//			InputStream is = Juego.class.getResourceAsStream("/files/sk_bien.txt");
+			InputStream is = Juego.class.getResourceAsStream(path);
+			InputStreamReader isr = new InputStreamReader(is);
+			br = new BufferedReader(isr);
 			
 			for (int i = 0; i < size; i++) {
 				line = br.readLine();
@@ -110,7 +114,7 @@ public class Juego {
 	 * Crea un nuevo juego con una solución predefinida y tablero de 9x9.
 	 */
 	public Juego() {
-		this("src/files/sk_bien.txt", 9);
+		this("/files/sk_bien.txt", 9);
 	}
 	
 	/**

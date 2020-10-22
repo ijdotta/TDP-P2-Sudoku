@@ -49,6 +49,7 @@ public class GUI extends JFrame {
 	private Juego juego;
 	private JButton[][] tableroGrafico;
 	private Timer timer;
+	private Color colorCorrecta, colorIncorrecta, colorSeleccionada;
 
 	/**
 	 * Launch the application.
@@ -80,7 +81,7 @@ public class GUI extends JFrame {
 		inicializarLogger();
 		
 		setTitle("Sudoku"); 
-		juego = new Juego("src/files/sk_bien.txt", 9, 5);
+		juego = new Juego("/files/sk_bien.txt", 9, 5);
 		
 		if (juego.getTablero() == null) {
 			logger.severe("No se puedo iniciar el juego. ");
@@ -103,6 +104,10 @@ public class GUI extends JFrame {
 		Color mainBgr = new Color(196, 215, 225);
 		Color panelBgr = Color.WHITE;
 		Color bordeCeldasColor = Color.BLACK;
+		
+		colorCorrecta = Color.WHITE;
+		colorIncorrecta = new Color(230,90,69);
+//		colorSeleccionada = new Color();
 		
 		//Disposición general:
 		JPanel top, center, bottom;
@@ -173,7 +178,8 @@ public class GUI extends JFrame {
 		panelInfo.add(clockPanel);
 		
 		//Inserta los ':' separadores del reloj
-		ImageIcon icon = new ImageIcon("src/img/Reloj/separador.png");
+//		ImageIcon icon = new ImageIcon("src/img/Reloj/separador.png");
+		ImageIcon icon = new ImageIcon(GUI.class.getResource("/img/Reloj/separador.png"));
 		Image img = icon.getImage();
 		Image newimg = img.getScaledInstance((int)digitDim.getWidth(), (int) digitDim.getHeight(), java.awt.Image.SCALE_SMOOTH);
 		icon.setImage(newimg);
@@ -242,7 +248,7 @@ public class GUI extends JFrame {
 							c = Integer.parseInt(index[1]);
 							
 							//Restablecer color a "no seleccionada"
-							Color bgr = juego.getCelda(f, c).isCorrecta() ? Color.WHITE : Color.RED;
+							Color bgr = juego.getCelda(f, c).isCorrecta() ? colorCorrecta : colorIncorrecta;
 							selCeldaGrafica.setBackground(bgr);
 							
 							if (selCeldaGrafica == celdaGrafica) {
@@ -251,7 +257,7 @@ public class GUI extends JFrame {
 							//Selecciona una celda nueva si no se presionó la misma
 							else {
 								selCeldaGrafica = celdaGrafica;
-								selCeldaGrafica.setBackground(Color.GRAY);
+								selCeldaGrafica.setBackground(colorSeleccionada);
 							}
 						}
 					}
@@ -276,11 +282,13 @@ public class GUI extends JFrame {
 			panelBotones.add(boton);
 			
 			if (i < cantCeldasLinea) {
-				newIcon = new ImageIcon("src/img/Numeros/n" + (i+1) + ".png");
+//				newIcon = new ImageIcon("src/img/Numeros/n" + (i+1) + ".png"); TODO
+				newIcon = new ImageIcon(GUI.class.getResource("/img/Numeros/n" + (i+1) + ".png"));
 				boton.setActionCommand(Integer.toString(i+1));
 			}
 			else {
-				newIcon = new ImageIcon("src/img/Numeros/borrar.png");
+//				newIcon = new ImageIcon("src/img/Numeros/borrar.png"); TODO
+				newIcon = new ImageIcon(GUI.class.getResource("/img/Numeros/borrar.png"));
 				boton.setActionCommand("0");
 			}
 			
@@ -348,7 +356,8 @@ public class GUI extends JFrame {
 						int width = (int) dim.getWidth();
 						int height = (int) dim.getHeight();
 
-						icon = new ImageIcon("src/img/Reloj/d" + time.charAt(i) + ".png");
+//						icon = new ImageIcon("src/img/Reloj/d" + time.charAt(i) + ".png"); TODO
+						icon = new ImageIcon(GUI.class.getResource("/img/Reloj/d" + time.charAt(i) + ".png"));
 						img = icon.getImage();
 						newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
 						icon.setImage(newimg);
@@ -382,7 +391,7 @@ public class GUI extends JFrame {
 				celda = juego.getCelda(i, j);
 				
 				//Actualizar color según si el valor es correcto
-				bgr = celda.isCorrecta() ? Color.WHITE : new Color(230,90,69);
+				bgr = celda.isCorrecta() ? colorCorrecta : colorIncorrecta;
 				celdaGrafica.setBackground(bgr);
 				
 				//Actualizar imagen del número (solo si ha cambiado)
@@ -412,7 +421,7 @@ public class GUI extends JFrame {
 	private void victoria() {
 		for (int i = 0; i < tableroGrafico.length; i++) {
 			for (int j = 0; j < tableroGrafico.length; j++) {
-				tableroGrafico[i][j].setBackground(Color.GREEN);
+				tableroGrafico[i][j].setBackground(new Color(117, 213, 100));
 				tableroGrafico[i][j].setEnabled(false);
 			}
 		}
