@@ -7,34 +7,20 @@ import javax.swing.ImageIcon;
 public class EntidadGrafica {
 	
 	protected ImageIcon grafico;
-//	protected String[] imagenes;
 	protected URL[] imagenes;
 	
 	/**
 	 * Crea una entidad gráfica y define el conjunto de imágenes posibles.
 	 */
-//	public EntidadGrafica() {
-//		grafico = new ImageIcon();
-//		imagenes = new String[10];
-//		
-//		URL path = getClass().getResource("/img/Numeros/blank.png");
-//		
-//		imagenes[0] = path.getFile();
-//		for (int i = 1; i <= 9; i++) {
-//			path = getClass().getResource("/img/Numeros/n" + i + ".png");
-//			imagenes[i] = path.getFile();
-//		}
-//		
-//	}
 	public EntidadGrafica() {
 		grafico = new ImageIcon();
 		imagenes = new URL[10];
 		
-		URL path = getClass().getResource("/img/Numeros/blank.png");
+		URL path = getClass().getResource("/resources/img/Numeros/blank.png");
 		
 		imagenes[0] = path;
 		for (int i = 1; i <= 9; i++) {
-			path = getClass().getResource("/img/Numeros/n" + i + ".png");
+			path = getClass().getResource("/resources/img/Numeros/n" + i + ".png");
 			imagenes[i] = path;
 		}
 		
@@ -46,7 +32,7 @@ public class EntidadGrafica {
 	 */
 	public void actualizar(int valor) {
 		if (valor < 0 || valor > 9)
-			valor = 0;
+			valor = valor % 9;
 		
 		grafico.setImage( (new ImageIcon(imagenes[valor])).getImage() );
 		

@@ -53,7 +53,6 @@ public class Juego {
 			this.tablero = new Celda[size][size];
 			this.cantCeldasCompletasCorrectas = size * size;
 
-//			InputStream is = Juego.class.getResourceAsStream("/files/sk_bien.txt");
 			InputStream is = Juego.class.getResourceAsStream(path);
 			InputStreamReader isr = new InputStreamReader(is);
 			br = new BufferedReader(isr);
@@ -114,7 +113,7 @@ public class Juego {
 	 * Crea un nuevo juego con una solución predefinida y tablero de 9x9.
 	 */
 	public Juego() {
-		this("/files/sk_bien.txt", 9);
+		this("/resources/soluciones/sk_bien.txt", 9);
 	}
 	
 	/**

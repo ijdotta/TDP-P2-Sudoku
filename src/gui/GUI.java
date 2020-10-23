@@ -81,7 +81,9 @@ public class GUI extends JFrame {
 		inicializarLogger();
 		
 		setTitle("Sudoku"); 
-		juego = new Juego("/files/sk_bien.txt", 9, 5);
+		int cantCeldasEliminar = 40;
+		int cantidadNumerosJugar = 9;
+		juego = new Juego("/resources/soluciones/solucion_sudoku_" + cantidadNumerosJugar + ".txt", cantidadNumerosJugar, cantCeldasEliminar);
 		
 		if (juego.getTablero() == null) {
 			logger.severe("No se puedo iniciar el juego. ");
@@ -100,14 +102,15 @@ public class GUI extends JFrame {
 		setBounds(300, 100, 500, 575 + 50*(cantCeldasLinea/10 +1));
 		
 		//Paleta de colores:
-//		Color mainBgr = new Color(0, 152, 199);
 		Color mainBgr = new Color(196, 215, 225);
-		Color panelBgr = Color.WHITE;
-		Color bordeCeldasColor = Color.BLACK;
+		Color panelInfoBgr = Color.WHITE;
+		Color borderColor = new Color(49,91,97); 
+		Color fondoPanelesTableroColor = borderColor;
+		Color panelBotonesBgr = borderColor;
 		
 		colorCorrecta = Color.WHITE;
 		colorIncorrecta = new Color(230,90,69);
-//		colorSeleccionada = new Color();
+		colorSeleccionada = Color.GRAY;
 		
 		//Disposición general:
 		JPanel top, center, bottom;
@@ -132,22 +135,22 @@ public class GUI extends JFrame {
 		dimPanelBotones = new Dimension(450, 50 * (cantCeldasLinea / 10 + 1));
 		
 		panelInfo = new JPanel();
-		panelInfo.setBorder(new LineBorder(Color.BLACK, 3));
+		panelInfo.setBorder(new LineBorder(borderColor, 3));
 		panelInfo.setPreferredSize(dimPanelInfo);
 		top.add(panelInfo);
-		panelInfo.setBackground(panelBgr);
+		panelInfo.setBackground(panelInfoBgr);
 		
 		panelTablero = new JPanel();
-		panelTablero.setBorder(new LineBorder(bordeCeldasColor));
+		panelTablero.setBorder(new LineBorder(fondoPanelesTableroColor));
 		panelTablero.setPreferredSize(dimTablero);
 		center.add(panelTablero);
-		panelTablero.setBackground(bordeCeldasColor);
+		panelTablero.setBackground(fondoPanelesTableroColor);
 		
 		panelBotones = new JPanel();
-		panelBotones.setBorder(new LineBorder(Color.BLACK, 3));
+		panelBotones.setBorder(new LineBorder(borderColor, 3));
 		panelBotones.setPreferredSize(dimPanelBotones);
 		bottom.add(panelBotones);
-		panelBotones.setBackground(panelBgr);
+		panelBotones.setBackground(panelBotonesBgr);
 		
 		//FIN DISEÑO GENERAL
 		
@@ -164,7 +167,7 @@ public class GUI extends JFrame {
 		
 		clockPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		clockPanel.setPreferredSize(clockPanelDim);
-		clockPanel.setBackground(panelBgr);
+		clockPanel.setBackground(panelInfoBgr);
 		
 		for (int i = 0; i < timeDisplay.length; i++) {
 			digit = timeDisplay[i] = new JLabel();
@@ -178,8 +181,7 @@ public class GUI extends JFrame {
 		panelInfo.add(clockPanel);
 		
 		//Inserta los ':' separadores del reloj
-//		ImageIcon icon = new ImageIcon("src/img/Reloj/separador.png");
-		ImageIcon icon = new ImageIcon(GUI.class.getResource("/img/Reloj/separador.png"));
+		ImageIcon icon = new ImageIcon(GUI.class.getResource("/resources/img/Reloj/separador.png"));
 		Image img = icon.getImage();
 		Image newimg = img.getScaledInstance((int)digitDim.getWidth(), (int) digitDim.getHeight(), java.awt.Image.SCALE_SMOOTH);
 		icon.setImage(newimg);
@@ -204,7 +206,7 @@ public class GUI extends JFrame {
 			for (int j = 0; j < cantPanelesLinea; j++) {
 				JPanel subPanel = new JPanel();
 				subPanel.setLayout(new GridLayout(cantCeldasLineaPanel, cantCeldasLineaPanel));
-				subPanel.setBackground(Color.BLACK); //Testing
+				subPanel.setBackground(fondoPanelesTableroColor);
 				panelTablero.add(subPanel);
 				tmpPanel[i][j] = subPanel;
 			}
@@ -236,7 +238,7 @@ public class GUI extends JFrame {
 						//Selecciona si no había seleccionada
 						if (selCeldaGrafica == null) {
 							selCeldaGrafica = celdaGrafica;
-							selCeldaGrafica.setBackground(Color.GRAY);
+							selCeldaGrafica.setBackground(colorSeleccionada);
 						}
 						else {
 							
@@ -282,13 +284,21 @@ public class GUI extends JFrame {
 			panelBotones.add(boton);
 			
 			if (i < cantCeldasLinea) {
-//				newIcon = new ImageIcon("src/img/Numeros/n" + (i+1) + ".png"); TODO
-				newIcon = new ImageIcon(GUI.class.getResource("/img/Numeros/n" + (i+1) + ".png"));
+				if (1 <= i+1 && i+1 <= 9)
+					newIcon = new ImageIcon(GUI.class.getResource("/resources/img/Numeros/n" + (i+1) + ".png"));
+				else {
+					/*
+					 * Esto solo lo hago para que el programa se ejecute y pueda verse como se adapta la GUI
+					 * si se quisieran jugar con una mayor cantidad de valores, pero no se incluyen las imagenes
+					 * que representan valores > 9.
+					 * Claramente algunas imágenes n tales que 1 <= n <= 9 representaran a n y otras representaran a 9+n. 
+					 */
+					newIcon = new ImageIcon(GUI.class.getResource("/resources/img/Numeros/n" + ((i+1) % 9) + ".png"));
+				}
 				boton.setActionCommand(Integer.toString(i+1));
 			}
 			else {
-//				newIcon = new ImageIcon("src/img/Numeros/borrar.png"); TODO
-				newIcon = new ImageIcon(GUI.class.getResource("/img/Numeros/borrar.png"));
+				newIcon = new ImageIcon(GUI.class.getResource("/resources/img/Numeros/borrar.png"));
 				boton.setActionCommand("0");
 			}
 			
@@ -356,8 +366,7 @@ public class GUI extends JFrame {
 						int width = (int) dim.getWidth();
 						int height = (int) dim.getHeight();
 
-//						icon = new ImageIcon("src/img/Reloj/d" + time.charAt(i) + ".png"); TODO
-						icon = new ImageIcon(GUI.class.getResource("/img/Reloj/d" + time.charAt(i) + ".png"));
+						icon = new ImageIcon(GUI.class.getResource("/resources/img/Reloj/d" + time.charAt(i) + ".png"));
 						img = icon.getImage();
 						newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
 						icon.setImage(newimg);
@@ -428,8 +437,8 @@ public class GUI extends JFrame {
 		
 		timer.cancel();
 		
-		JOptionPane.showMessageDialog(this, "¡Felicitaciones!\nHa completado el tablero correctamente. ");
-		int res = JOptionPane.showConfirmDialog(this, "¿Desea salir?");
+		JOptionPane.showMessageDialog(this, "¡Felicitaciones!\nHa completado el tablero correctamente. ", "Victoria", JOptionPane.INFORMATION_MESSAGE, null);
+		int res = JOptionPane.showConfirmDialog(this, "¿Desea salir?", "Confirmación", JOptionPane.YES_NO_OPTION);
 		
 		if (res == 0)
 			System.exit(0);
