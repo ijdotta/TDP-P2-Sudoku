@@ -13,7 +13,7 @@ Para simplificar la implementación, el tamaño del panel del tablero es fijo, e
 ### Tablero de 16x16
 Se incluye una solución válida de un tablero de 16x16 cuyo único fin es ver cómo se adapta la interfaz gráfica. Así, por simplicidad, no son incluídas las imágenes correspondientes a cada valor. Por lo tanto, los valores entre 1 y 9 serán representados con la imagen correcta, mientras que los valores v entre 10 y 16 se representarán con la imagen correspondiente a v mod 9.
 
-## Consideraciones sobre la parte lógica
+## Consideraciones sobre la parte lógica :gear:
 
 ### Errores en la carga del juego
 Si se produce un error en la carga de la parte lógica del juego, como una solución incorrecta o incompleta, archivos corruptos o inexistentes, o culquier otro error que impida el curso normal del juego, éste es representado anulando el campo del tablero lógico. Luego la interfaz gráfica captura que se produjo un error y aborta el programa.
