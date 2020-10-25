@@ -28,4 +28,4 @@ Es la versión más general, un tablero de 9x9 al que se le eliminan 45 celdas p
 Versión de 9x9 al que se le elimina únicamente una celda para observar el comportamiento ante una victoria.
 
 ### Sudoku (versión 16x16, victoria rápida).jar
-Versión de 16x26 al que se le elimina únicamente una celda para observar el comportamiento ante una victoria.
+Versión de 16x16 al que se le elimina únicamente una celda para observar el comportamiento ante una victoria.
