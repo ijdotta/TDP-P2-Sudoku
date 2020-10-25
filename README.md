@@ -1,4 +1,4 @@
-# Juego Sudoku
+# Juego Sudoku :pencil2:
 Implementación del juego Sudoku en Java. Proyecto de la materia Tecnología de Programación de la Universidad Nacional del Sur.
 
 # Consideraciones sobre la implementación :hammer_and_wrench:
