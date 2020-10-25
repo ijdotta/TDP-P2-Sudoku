@@ -15,7 +15,7 @@ Se incluye una solución válida de un tablero de 16x16 cuyo único fin es ver c
 
 ## Consideraciones sobre la parte lógica
 
-### Errores en la carga de una solución
+### Errores en la carga del juego
 Si se produce un error en la carga de la parte lógica del juego, como una solución incorrecta o incompleta, archivos corruptos o inexistentes, o culquier otro error que impida el curso normal del juego, éste es representado anulando el campo del tablero lógico. Luego la interfaz gráfica captura que se produjo un error y aborta el programa.
 
 # Archivos JAR incluídos
