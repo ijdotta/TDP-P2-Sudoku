@@ -4,6 +4,11 @@ import java.net.URL;
 
 import javax.swing.ImageIcon;
 
+/**
+ * Class EntidadGrafica - Modela la parte gráfica de una Celda.
+ * @author Ignacio Joaquín Dotta
+ *
+ */
 public class EntidadGrafica {
 	
 	protected ImageIcon grafico;
@@ -32,7 +37,11 @@ public class EntidadGrafica {
 	 */
 	public void actualizar(int valor) {
 		if (valor < 0 || valor > 9)
-			valor = valor % 9;
+			valor = valor % 9; 
+		/*
+		 * Esto lo agrego solo para evitar errores en ejecución cuando se elije un tablero de sudoku de más
+		 * de 9 números (16x16, 25x25, 36x36, ...) y no están disponibles las imágenes correspondientes.
+		 */
 		
 		grafico.setImage( (new ImageIcon(imagenes[valor])).getImage() );
 		

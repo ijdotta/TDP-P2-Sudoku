@@ -30,14 +30,8 @@ import logica.Celda;
 import logica.Juego;
 
 /**
- * 
+ * Class GUI - Interfaz gráfica del juego Sudoku
  * @author Ignacio Joaquín Dotta
- *
- * OBSERVACIÓN: el tamaño de la ventana y la creación de celdas, paneles, botones, etc. varía según la cantidad de números
- * con la que se desee jugar (siempre y cuando la cantidad x sea tal que x = n^2 para 1 <= n <= x) por sugerencia de José.
- * 
- * En los archivos fuente se incluye un tablero de 16x16 y uno de 25x25 para verlo en funcionamiento, pero no así las imagenes
- * de dichos números.
  */
 public class GUI extends JFrame {
 
@@ -81,7 +75,8 @@ public class GUI extends JFrame {
 		inicializarLogger();
 		
 		setTitle("Sudoku"); 
-		int cantCeldasEliminar = 40;
+		
+		int cantCeldasEliminar = 45;
 		int cantidadNumerosJugar = 9;
 		juego = new Juego("/resources/soluciones/solucion_sudoku_" + cantidadNumerosJugar + ".txt", cantidadNumerosJugar, cantCeldasEliminar);
 		
@@ -104,7 +99,7 @@ public class GUI extends JFrame {
 		//Paleta de colores:
 		Color mainBgr = new Color(196, 215, 225);
 		Color panelInfoBgr = Color.WHITE;
-		Color borderColor = new Color(49,91,97); 
+		Color borderColor = Color.BLACK; 
 		Color fondoPanelesTableroColor = borderColor;
 		Color panelBotonesBgr = borderColor;
 		
@@ -274,12 +269,14 @@ public class GUI extends JFrame {
 		//DISEÑO PANEL BOTONES
 		ImageIcon newIcon;
 		Image newimage;
+		Dimension dimBotonAccion = new Dimension(50, 50);
 		
 		panelBotones.setLayout(new GridLayout(cantCeldasLinea/10 + 1, cantCeldasLinea+1));
 		
 		for (int i = 0; i < cantCeldasLinea+1; i++) {
 			JButton boton = new JButton();
 			
+			boton.setPreferredSize(dimBotonAccion);
 			boton.setBackground(Color.WHITE);
 			panelBotones.add(boton);
 			
@@ -291,7 +288,7 @@ public class GUI extends JFrame {
 					 * Esto solo lo hago para que el programa se ejecute y pueda verse como se adapta la GUI
 					 * si se quisieran jugar con una mayor cantidad de valores, pero no se incluyen las imagenes
 					 * que representan valores > 9.
-					 * Claramente algunas imágenes n tales que 1 <= n <= 9 representaran a n y otras representaran a 9+n. 
+					 * Claramente, algunas imágenes con valor n representaran a n y otras representaran a 9+n. 
 					 */
 					newIcon = new ImageIcon(GUI.class.getResource("/resources/img/Numeros/n" + ((i+1) % 9) + ".png"));
 				}
@@ -303,7 +300,13 @@ public class GUI extends JFrame {
 			}
 			
 			//Establecer imagen
-			newimage = newIcon.getImage().getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
+			float scale_factor = 0.4f;
+			int width, height;
+			width = (int) dimBotonAccion.getWidth();
+			height = (int) dimBotonAccion.getHeight();
+			newimage = newIcon.getImage().getScaledInstance( width - (int) (width * scale_factor), 
+															 height - (int) (height * scale_factor), 
+															java.awt.Image.SCALE_SMOOTH);
 			newIcon.setImage(newimage);
 			boton.setIcon(newIcon);
 			
@@ -332,10 +335,12 @@ public class GUI extends JFrame {
 			});
 			
 		}
+		
+		//FIN DISEÑO PANEL BOTONES
 	}
 	
 	/**
-	 * Método auxiliar para activar el reloj del juego y configurar la actualización gráficamente.
+	 * Método auxiliar para configurar reloj del juego.
 	 * @param timeDisplay Arreglo de labels de dígitos de reloj.
 	 */
 	private void configurarReloj(JLabel[] timeDisplay) {
@@ -392,6 +397,7 @@ public class GUI extends JFrame {
 		Image img, newimg;
 		Color bgr;
 		int width, height;
+		float scale_factor = 0.2f;
 		
 		for (int i = 0; i < tableroGrafico.length; i++) {
 			for (int j = 0; j < tableroGrafico[i].length; j++) {
@@ -408,12 +414,14 @@ public class GUI extends JFrame {
 					celda.setModificada(false);
 					
 					dim = celdaGrafica.getPreferredSize();
-					width = (int) dim.getWidth() - 2;
-					height = (int) dim.getHeight() - 2;
+					width = (int) dim.getWidth();
+					height = (int) dim.getHeight();
 					
 					grafico = celda.getEntidadGrafica().getGrafico();
 					img = celda.getEntidadGrafica().getGrafico().getImage();
-					newimg = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+					newimg = img.getScaledInstance(width - (int) (width * scale_factor), 
+												   height - (int) (height * scale_factor), 
+												   java.awt.Image.SCALE_SMOOTH);
 					grafico.setImage(newimg);
 					
 				}
@@ -437,8 +445,13 @@ public class GUI extends JFrame {
 		
 		timer.cancel();
 		
-		JOptionPane.showMessageDialog(this, "¡Felicitaciones!\nHa completado el tablero correctamente. ", "Victoria", JOptionPane.INFORMATION_MESSAGE, null);
-		int res = JOptionPane.showConfirmDialog(this, "¿Desea salir?", "Confirmación", JOptionPane.YES_NO_OPTION);
+		String [] options = {"Sí", "No"};
+		int res = JOptionPane.showOptionDialog(this, "¡Felicitaciones!\n" + 
+													 "Ha completado el tablero correctamente.\n" + 
+													 "¿Desea salir?", 
+													 "Fin del juego", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+		
+		logger.fine("res = " + res);
 		
 		if (res == 0)
 			System.exit(0);

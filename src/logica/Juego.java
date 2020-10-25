@@ -1,7 +1,6 @@
 package logica;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -15,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * 
+ * Class Juego - Lógica del juego Sudoku.
  * @author Ignacio Joaquín Dotta
  *
  */
@@ -53,9 +52,7 @@ public class Juego {
 			this.tablero = new Celda[size][size];
 			this.cantCeldasCompletasCorrectas = size * size;
 
-			InputStream is = Juego.class.getResourceAsStream(path);
-			InputStreamReader isr = new InputStreamReader(is);
-			br = new BufferedReader(isr);
+			br = new BufferedReader(new InputStreamReader(Juego.class.getResourceAsStream(path)));
 			
 			for (int i = 0; i < size; i++) {
 				line = br.readLine();
@@ -216,7 +213,7 @@ public class Juego {
 	 */
 	private boolean controlCeldasEnConflicto() {
 		boolean todasCorrectas = true;
-		Map<Integer, Celda> map; //Lo uso para controlar valores repetidos en un determinado área de búsqueda.
+		Map<Integer, Celda> map; //Lo uso para controlar valores repetidos en una determinada área de búsqueda.
 		Celda celda_actual, celda_anterior;
 		int valor, cantCeldasLinea, cantPanelesLinea, cantCeldasLineaPanel;
 		

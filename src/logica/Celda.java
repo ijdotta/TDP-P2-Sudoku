@@ -1,5 +1,10 @@
 package logica;
 
+/**
+ * Class Celda - Modela una celda del juego Sudoku.
+ * @author Ignacio Joaquín Dotta
+ *
+ */
 public class Celda {
 	
 	protected int valor;
