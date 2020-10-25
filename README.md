@@ -1,10 +1,10 @@
 # Juego Sudoku
 Implementación del juego Sudoku en Java. Proyecto de la materia Tecnología de Programación de la Universidad Nacional del Sur.
 
-# Consideraciones sobre la implementación
+# Consideraciones sobre la implementación :hammer_and_wrench:
 Detalle de algunas de las deciciones tomadas.
 
-## Consideraciones sobre la parte gráfica
+## Consideraciones sobre la parte gráfica :tv:
 
 ### Tableros de mayor tamaño
 Como fue sugerido, la GUI puede adaptarse a tableros de un tamaño mayor a 9x9 (como 16x16, 25x25, 36x36, ...).
@@ -18,7 +18,7 @@ Se incluye una solución válida de un tablero de 16x16 cuyo único fin es ver c
 ### Errores en la carga del juego
 Si se produce un error en la carga de la parte lógica del juego, como una solución incorrecta o incompleta, archivos corruptos o inexistentes, o culquier otro error que impida el curso normal del juego, éste es representado anulando el campo del tablero lógico. Luego la interfaz gráfica captura que se produjo un error y aborta el programa.
 
-# Archivos JAR incluídos
+# Archivos JAR incluídos :cd:
 Se incluyen tres archivos JAR creados con la versión de Java 14.0.2.
 
 ### Sudoku (versión 9x9, general).jar
