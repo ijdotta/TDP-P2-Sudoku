@@ -7,7 +7,7 @@ Detalle de algunas de las deciciones tomadas.
 ## Consideraciones sobre la parte gráfica
 
 ### Tableros de mayor tamaño
-Como fue sugerido, la GUI puede adaptarse a tableros de mayor tamaño que 9x9 (como 16x16, 25x25, 36x36, ...).
+Como fue sugerido, la GUI puede adaptarse a tableros de un tamaño mayor a 9x9 (como 16x16, 25x25, 36x36, ...).
 Para simplificar la implementación, el tamaño del panel del tablero es fijo, es decir, si aumenta la cantidad de celdas contenidas éstas pasarán a ser de menor tamaño.
 Mientras tanto, el tamaño de la ventana principal puede variar según la cantidad de botones que deban aparecer en la botonera inferior, admitiendo siempre 10 botones por fila y aumentando la cantidad de filas segpun sea necesario.
 
